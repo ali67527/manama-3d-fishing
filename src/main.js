@@ -241,6 +241,10 @@ class GameController {
     this.loadSaveData();
     this.updateHUD();
 
+    window.addEventListener('beforeunload', () => this.saveData());
+    window.addEventListener('pagehide', () => this.saveData());
+    setInterval(() => this.saveData(), 3000);
+
     const getEnteredName = () => {
       const inp = document.getElementById('player-name-input');
       return (inp && inp.value.trim()) ? inp.value.trim() : 'صياد_المنامة';
@@ -591,7 +595,9 @@ class GameController {
         catchesCount: this.catchesCount,
         purchasedItems: this.purchasedItems,
         equippedRodId: this.equippedRodId,
-        coolerCapacity: this.coolerCapacity
+        coolerCapacity: this.coolerCapacity,
+        heldFishData: this.player ? this.player.heldFishData : [null, null, null, null],
+        coolerStoredFish: this.coolerStoredFish || []
       };
       localStorage.setItem('manama_fishing_save', JSON.stringify(data));
     } catch (e) {}
@@ -607,6 +613,27 @@ class GameController {
         if (data.purchasedItems) this.purchasedItems = data.purchasedItems;
         if (data.equippedRodId) this.equippedRodId = data.equippedRodId;
         if (data.coolerCapacity) this.coolerCapacity = data.coolerCapacity;
+
+        if (data.heldFishData && this.player) {
+          this.player.heldFishData = data.heldFishData;
+          for (let i = 0; i < 4; i++) {
+            const f = this.player.heldFishData[i];
+            const slotNum = i + 2;
+            const icon = document.getElementById(`slot-${slotNum}-icon`);
+            const lbl = document.getElementById(`slot-${slotNum}-label`);
+            if (f) {
+              if (icon) icon.innerText = '🐟';
+              if (lbl) lbl.innerText = f.nameAr;
+            } else {
+              if (icon) icon.innerText = '✋';
+              if (lbl) lbl.innerText = 'فارغ';
+            }
+          }
+        }
+
+        if (data.coolerStoredFish) {
+          this.coolerStoredFish = data.coolerStoredFish;
+        }
       }
     } catch (e) {}
   }
