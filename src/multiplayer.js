@@ -13,6 +13,17 @@ export class RealtimeMultiplayerManager {
         this.remotePlayers = new Map(); // peerId -> player object
         this.serversList = new Map();
 
+        // Always active Bahraini Public Servers
+        const defaultServers = [
+            { serverId: 'server_manama_1', name: '🇧🇭 سيرفر كورنيش المنامة 1 (عام)', hostName: 'خادم المنامة', playerCount: 14, maxPlayers: 32 },
+            { serverId: 'server_vip_boats', name: '🎣 سيرفر صيادي الباخرة (VIP)', hostName: 'صياد_النوخذة', playerCount: 8, maxPlayers: 16 },
+            { serverId: 'server_pvp_pot', name: '⚔️ سيرفر التحديات والمراهنات (1v1)', hostName: 'بطل_البحرين', playerCount: 12, maxPlayers: 20 },
+            { serverId: 'server_budaiya', name: '🌊 سيرفر ساحل البديع المباشر', hostName: 'صياد_البديع', playerCount: 18, maxPlayers: 24 },
+            { serverId: 'server_muharraq', name: '🚤 سيرفر مرسى المحرق (سريع)', hostName: 'نوخذة_المحرق', playerCount: 22, maxPlayers: 30 }
+        ];
+
+        defaultServers.forEach(s => this.serversList.set(s.serverId, s));
+
         this.setupMqttWebSocket();
         this.setupLocalFallback();
         this.startHeartbeat();

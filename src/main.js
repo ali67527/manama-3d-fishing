@@ -1471,11 +1471,15 @@ class GameController {
       const b = document.getElementById(`btn-join-${s.serverId}`);
       if (b) {
         b.addEventListener('click', () => {
-          this.multiplayer.joinServer(s.serverId);
+          if (this.multiplayer) {
+            this.multiplayer.setOnlineMode(true);
+            this.multiplayer.joinServer(s.serverId);
+          }
           document.getElementById('server-browser-modal').classList.add('hidden');
           document.getElementById('multiplayer-status').innerText = `🌐 ${s.name}`;
           this.player.requestLock(this.container);
           this.gameState = 'ROAMING';
+          this.toast(`🌐 انضممت إلى [${s.name}] بنجاح!`);
         });
       }
     });
