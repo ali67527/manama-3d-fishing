@@ -158,25 +158,55 @@
       </div>
     </div>
 
-    <!-- Start Screen with Name Input (Lobby) -->
+    <!-- Start Screen with Name Input & 3D Character Studio (Lobby) -->
     <div id="start-overlay" class="fullscreen-overlay active">
-      <div class="start-modal glass-card-lg">
+      <div class="start-modal glass-card-lg" style="max-width:850px">
         <div class="start-header">
           <span class="bahrain-badge">🇧🇭 مملكة البحرين - كورنيش المنامة 3D</span>
           <h1>لعبة صيد الأسماك الاحترافية</h1>
-          <p>أدخل اسمك واختر نمط اللعب في خليج البحرين!</p>
+          <p>تخصيص شخصية الصياد واختيار نمط اللعب!</p>
         </div>
 
-        <div style="margin: 20px 0;">
-          <label style="font-weight: 800; display: block; margin-bottom: 8px;">👤 أدخل اسمك في اللعبة (Player Name):</label>
-          <input type="text" id="player-name-input" class="input-name" placeholder="أدخل اسمك هنا..." value="صياد_المنامة" />
+        <!-- 3D Character Customization Studio Grid -->
+        <div class="character-studio-grid">
+          <div class="studio-preview-box">
+            <div id="avatar-3d-canvas"></div>
+            <span class="studio-badge">📐 معاينة الشخصية 3D</span>
+          </div>
+
+          <div class="studio-controls">
+            <div>
+              <label style="font-weight: 800; display: block; margin-bottom: 4px;">👤 اسمك في اللعبة (Player Name):</label>
+              <input type="text" id="player-name-input" class="input-name" placeholder="أدخل اسمك هنا..." value="صياد_المنامة" style="width:100%" />
+            </div>
+
+            <div>
+              <label style="font-weight: 800; display: block; margin-bottom: 4px;">👔 لون الثوب/الملابس:</label>
+              <select id="custom-thobe-color" class="input-select" style="width:100%">
+                <option value="0xffffff" selected>⚪ الأبيض التقليدي الملكي</option>
+                <option value="0x1b3b6f">🔵 الكحلي البحري الفاخر</option>
+                <option value="0x222222">⬛ الأسود اللامع</option>
+                <option value="0x800020">🔴 العنابي البحريني</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-weight: 800; display: block; margin-bottom: 4px;">🧢 غطاء الرأس:</label>
+              <select id="custom-headwear" class="input-select" style="width:100%">
+                <option value="ghutra" selected>🇧🇭 الغترة والعقال البحريني</option>
+                <option value="cap">🧢 كاب رياضي أسود</option>
+                <option value="hair">💇‍♂️ شعر أسود أنيق</option>
+                <option value="none">❌ بدون غطاء رأس</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="mode-select-grid">
           <button id="btn-mode-offline" class="mode-card">
             <span class="mode-icon">🎮</span>
             <h3>لعب فردي (Offline)</h3>
-            <p>استمتع بالصيد واستكشاف البحر وتطوير عتادك بمفردك وبدون اتصال</p>
+            <p>استمتع بالصيد واستكشاف البحر وتطوير عتادك بمفردك</p>
           </button>
           <button id="btn-mode-online" class="mode-card highlight">
             <span class="mode-icon">🌐</span>
@@ -335,6 +365,40 @@
       </div>
     </div>
 
+    <!-- Trade Incoming Request Modal -->
+    <div id="trade-incoming-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg" style="max-width:440px;text-align:center">
+        <div class="modal-header">
+          <h3>🤝 طلب مبادلة / إهداء سمكة</h3>
+        </div>
+        <div style="padding: 15px 0;">
+          <p id="trade-incoming-text" style="font-size:1.1rem;font-weight:700;margin-bottom:12px">يود لاعب إهداءك سمكة!</p>
+          <div id="trade-incoming-details" style="background:rgba(0,210,255,0.1);padding:12px;border-radius:12px;color:#00d2ff;font-weight:800"></div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:15px">
+          <button id="btn-accept-trade" class="btn-primary" style="flex:1;padding:12px">✅ قبول والإنزال</button>
+          <button id="btn-decline-trade" class="btn-secondary" style="flex:1;padding:12px">✕ رفض</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PvP 1v1 Incoming Challenge Request Modal -->
+    <div id="challenge-incoming-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg" style="max-width:440px;text-align:center">
+        <div class="modal-header">
+          <h3>⚔️ دعوة تحدي صيد 1v1 (100 دينار)</h3>
+        </div>
+        <div style="padding: 15px 0;">
+          <p id="challenge-incoming-text" style="font-size:1.1rem;font-weight:700;margin-bottom:10px">يتحداك لاعب في مسابقة صيد 60 ثانية برهان 100 دينار!</p>
+          <p style="color:#f1c40f;font-weight:800">🏆 جائزة الفائز: 200 دينار كاملة!</p>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:15px">
+          <button id="btn-accept-challenge" class="btn-primary" style="flex:1;padding:12px">⚔️ قبول التحدي والبدء!</button>
+          <button id="btn-decline-challenge" class="btn-secondary" style="flex:1;padding:12px">✕ انسحاب / رفض</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settings-modal" class="fullscreen-overlay hidden">
       <div class="modal-card glass-card-lg" style="max-width:460px">
@@ -343,7 +407,7 @@
           <button class="btn-close-modal" id="btn-close-settings">✕</button>
         </div>
         <div class="settings-body" style="display:flex;flex-direction:column;gap:18px;padding:15px 0">
-          <div class="setting-group">
+          <div class="setting-group" id="setting-group-mobile-size">
             <label style="display:block;margin-bottom:8px;font-weight:700">📱 حجم أزرار تحكم الجوال:</label>
             <select id="setting-btn-size" class="glass-input" style="width:100%;padding:10px">
               <option value="80">صغير جداً (80%)</option>

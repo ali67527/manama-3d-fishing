@@ -419,6 +419,32 @@ class GameController {
       this.gameState = 'ROAMING';
     });
 
+    // Trade & PvP incoming modal listeners
+    const btnConfirmTrade = document.getElementById('btn-confirm-trade');
+    if (btnConfirmTrade) btnConfirmTrade.addEventListener('click', () => this.confirmTradeSend());
+
+    const btnAcceptTrade = document.getElementById('btn-accept-trade');
+    if (btnAcceptTrade) btnAcceptTrade.addEventListener('click', () => this.acceptIncomingTrade());
+
+    const btnDeclineTrade = document.getElementById('btn-decline-trade');
+    if (btnDeclineTrade) btnDeclineTrade.addEventListener('click', () => this.declineIncomingTrade());
+
+    const btnSendChallenge = document.getElementById('btn-send-challenge-confirm');
+    if (btnSendChallenge) btnSendChallenge.addEventListener('click', () => this.confirmPvPChallengeSend());
+
+    const btnAcceptChallenge = document.getElementById('btn-accept-challenge');
+    if (btnAcceptChallenge) btnAcceptChallenge.addEventListener('click', () => this.acceptIncomingPvP());
+
+    const btnDeclineChallenge = document.getElementById('btn-decline-challenge');
+    if (btnDeclineChallenge) btnDeclineChallenge.addEventListener('click', () => this.declineIncomingPvP());
+
+    // Hide mobile button size setting if playing on PC
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+    const mobileSizeGroup = document.getElementById('setting-group-mobile-size');
+    if (mobileSizeGroup && !isMobileDevice) {
+      mobileSizeGroup.style.display = 'none';
+    }
+
     const btnCloseVendorSell = document.getElementById('btn-close-vendor-sell');
     if (btnCloseVendorSell) {
       btnCloseVendorSell.addEventListener('click', () => {
@@ -776,6 +802,10 @@ class GameController {
     this.player.unlockPointer();
     this.triggerConfetti({ particleCount: 120, spread: 85, origin: { y: 0.6 } });
 
+    if (!this.unlockedFishSet) this.unlockedFishSet = new Set();
+    this.unlockedFishSet.add(this.currentFish.id);
+    this.saveData();
+
     document.getElementById('catch-title').innerText = `اصطدت ${this.currentFish.nameAr}!`;
     document.getElementById('catch-name-ar').innerText = this.currentFish.nameAr;
     document.getElementById('catch-name-en').innerText = this.currentFish.nameEn;
@@ -800,8 +830,9 @@ class GameController {
         purchasedItems: this.purchasedItems,
         equippedRodId: this.equippedRodId,
         coolerCapacity: this.coolerCapacity,
-        heldFishData: this.player ? this.player.heldFishData : [null, null, null, null],
-        coolerStoredFish: this.coolerStoredFish || []
+        heldFishData: this.player ? this.player.heldFishData : [],
+        coolerStoredFish: this.player ? this.player.coolerStoredFish : [],
+        unlockedFishArray: this.unlockedFishSet ? Array.from(this.unlockedFishSet) : []
       };
       localStorage.setItem('manama_fishing_save', JSON.stringify(data));
     } catch (e) {}
@@ -817,6 +848,7 @@ class GameController {
         if (data.purchasedItems) this.purchasedItems = data.purchasedItems;
         if (data.equippedRodId) this.equippedRodId = data.equippedRodId;
         if (data.coolerCapacity) this.coolerCapacity = data.coolerCapacity;
+        if (data.unlockedFishArray) this.unlockedFishSet = new Set(data.unlockedFishArray);
 
         if (data.heldFishData && this.player) {
           this.player.heldFishData = data.heldFishData;
@@ -835,11 +867,12 @@ class GameController {
           }
         }
 
-        if (data.coolerStoredFish) {
-          this.coolerStoredFish = data.coolerStoredFish;
+        if (data.coolerStoredFish && this.player) {
+          this.player.coolerStoredFish = data.coolerStoredFish;
         }
       }
     } catch (e) {}
+    if (!this.unlockedFishSet) this.unlockedFishSet = new Set();
   }
 
   updateHUD() {
@@ -1100,14 +1133,15 @@ class GameController {
 
   renderFishdex() {
     const container = document.getElementById('fishdex-grid-container');
+    if (!container) return;
     container.innerHTML = '';
 
     BAHRAINI_FISHES.forEach((f, idx) => {
       const d = this.inventory[f.id];
-      const isUnlocked = !!d;
+      const isUnlocked = !!d || (this.unlockedFishSet && this.unlockedFishSet.has(f.id));
 
       const card = document.createElement('div');
-      card.className = `fishdex-card ${isUnlocked ? '' : 'locked'}`;
+      card.className = `fishdex-card ${isUnlocked ? '' : 'fish-locked'}`;
 
       const canvasContainer = document.createElement('div');
       canvasContainer.className = 'fishdex-preview-canvas';
@@ -1115,10 +1149,21 @@ class GameController {
       card.appendChild(canvasContainer);
 
       const textContainer = document.createElement('div');
-      textContainer.innerHTML = `<h4>${f.nameAr}</h4><small>${f.nameEn}</small>
-        <div style="margin-top:6px;font-size:0.8rem">${isUnlocked ? `✅ ${d.count} صيد | أضخم: ${d.maxWeight} كجم` : '🔒 لم تُصطد بعد'}</div>`;
+      if (isUnlocked) {
+        textContainer.innerHTML = `
+          <h4 style="color:#00d2ff;margin-bottom:2px">${f.nameAr}</h4>
+          <small style="color:#aaa">${f.nameEn}</small>
+          <div style="margin-top:6px;font-size:0.8rem;color:#2ecc71">✅ ${d ? d.count : 1} صيد | أضخم: ${d ? d.maxWeight : f.minWeight} كجم</div>
+          <p style="font-size:0.75rem;color:#ddd;margin-top:4px">${f.description}</p>
+        `;
+      } else {
+        textContainer.innerHTML = `
+          <h4 style="color:#a0aec0;margin-bottom:2px">❓ ??? (غير مكتشف)</h4>
+          <small style="color:#718096">Mystery Bahraini Fish</small>
+          <div style="margin-top:6px;font-size:0.8rem;color:#3182ce">💙 اصطد السمكة في البحر لإلغاء القفل!</div>
+        `;
+      }
       card.appendChild(textContainer);
-
       container.appendChild(card);
 
       setTimeout(() => {
@@ -1138,16 +1183,22 @@ class GameController {
         renderer.setSize(domEl.clientWidth, domEl.clientHeight);
         domEl.appendChild(renderer.domElement);
 
-        const mesh = create3DFishMesh(f);
-        mesh.scale.set(1.5, 1.5, 1.5);
-        if (!isUnlocked) {
-          mesh.traverse(c => {
-            if (c.material) c.material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+        if (isUnlocked) {
+          const fishMesh = create3DFishMesh(f);
+          scene.add(fishMesh);
+          this.fishdexRenderers.push({ renderer, scene, camera, mesh: fishMesh });
+        } else {
+          // Locked mystery blue silhouette
+          const lockedFishData = { ...f, color: 0x00d2ff, accentColor: 0x005580 };
+          const mysteryMesh = create3DFishMesh(lockedFishData);
+          mysteryMesh.traverse(child => {
+            if (child.isMesh) {
+              child.material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true });
+            }
           });
+          scene.add(mysteryMesh);
+          this.fishdexRenderers.push({ renderer, scene, camera, mesh: mysteryMesh });
         }
-        scene.add(mesh);
-
-        this.fishdexRenderers.push({ scene, camera, renderer, mesh });
       }, 50);
     });
   }
@@ -1300,13 +1351,196 @@ class GameController {
     }
   }
 
-  receiveTradeRequest(data) {
-    this.toast(`🤝 أرسل لك الصياد [${data.senderName}] طلب مبادلة الأسماك! [اضغط K للتداول]`);
+  confirmTradeSend() {
+    const selectEl = document.getElementById('trade-player-select');
+    const targetPeerId = selectEl ? selectEl.value : null;
+    if (!targetPeerId) {
+      this.toast('⚠️ لا يوجد صياد آخر أونلاين لمشاطرته المبادلة!');
+      return;
+    }
+
+    let fishIndex = -1;
+    for (let i = 0; i < 4; i++) {
+      if (this.player.heldFishData[i]) {
+        fishIndex = i;
+        break;
+      }
+    }
+
+    if (fishIndex === -1) {
+      this.toast('⚠️ لا توجد أسماك في يدك لإهدائها!');
+      return;
+    }
+
+    const fishData = this.player.heldFishData[fishIndex];
+    this.player.heldFishData[fishIndex] = null;
+    if (this.player.activeSlot === fishIndex + 2) {
+      this.player.activeSlot = 1;
+    }
+    this.player.updateHotbarIcons();
+
+    if (this.multiplayer) {
+      this.multiplayer.broadcastMessage('manama3d/rooms/trade', {
+        type: 'TRADE_OFFER',
+        senderName: this.multiplayer.playerName,
+        senderPeerId: this.multiplayer.peerId,
+        targetPeerId: targetPeerId,
+        fish: fishData
+      });
+    }
+
+    document.getElementById('trade-modal').classList.add('hidden');
+    if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+    this.toast(`🤝 تم إرسال السمكة [${fishData.nameAr}] كهدية للصياد!`);
   }
 
-  receiveChallengeRequest(data) {
-    this.toast(`⚔️ أرسل لك الصياد [${data.senderName}] تحدي صيد 1v1!`);
-    this.start1v1Challenge(data.senderName);
+  receiveTradeOffer(data) {
+    this.pendingTradeData = data;
+    const modal = document.getElementById('trade-incoming-modal');
+    const textEl = document.getElementById('trade-incoming-text');
+    const detailsEl = document.getElementById('trade-incoming-details');
+
+    if (textEl) textEl.innerText = `🤝 أرسل لك الصياد [${data.senderName}] سمكة كهدية!`;
+    if (detailsEl) detailsEl.innerText = `🐟 ${data.fish.nameAr} (${data.fish.weight} كجم - بقيمة ${data.fish.calculatedPrice} دينار)`;
+
+    if (modal) {
+      this.player.unlockPointer();
+      modal.classList.remove('hidden');
+    }
+  }
+
+  acceptIncomingTrade() {
+    const modal = document.getElementById('trade-incoming-modal');
+    if (modal) modal.classList.add('hidden');
+
+    if (!this.pendingTradeData || !this.pendingTradeData.fish) return;
+    const fish = this.pendingTradeData.fish;
+
+    // 1. Check Hand Inventory (slots 0-3)
+    let addedToHand = false;
+    for (let i = 0; i < 4; i++) {
+      if (!this.player.heldFishData[i]) {
+        this.player.heldFishData[i] = fish;
+        addedToHand = true;
+        this.player.updateHotbarIcons();
+        this.toast(`🎁 استلمت سمكة [${fish.nameAr}] وحُفظت في الانفنتوري!`);
+        break;
+      }
+    }
+
+    if (!addedToHand) {
+      // 2. Check Cooler Storage
+      if (this.player.coolerStoredFish.length < this.player.coolerCapacity) {
+        this.player.coolerStoredFish.push(fish);
+        this.updateHUD();
+        this.toast(`🧊 الانفنتوري ممتلئ! تم إيداع سمكة [${fish.nameAr}] في ثلاجتك تلقائياً!`);
+      } else {
+        // 3. Both full -> Auto-sell to Abu Yacoub!
+        const earned = fish.calculatedPrice || 10;
+        this.coins += earned;
+        this.updateHUD();
+        if (sounds.playSellSound) sounds.playSellSound();
+        this.triggerConfetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+        this.toast(`💰 الانفنتوري والثلاجة ممتلئتان! تم بيع [${fish.nameAr}] تلقائياً لـ بويعقوب وإضافة ${earned} دينار لحسابك!`);
+      }
+    }
+
+    this.pendingTradeData = null;
+    if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+  }
+
+  declineIncomingTrade() {
+    const modal = document.getElementById('trade-incoming-modal');
+    if (modal) modal.classList.add('hidden');
+    this.pendingTradeData = null;
+    if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+    this.toast('✕ تم رفض طلب الهدية/المبادلة.');
+  }
+
+  confirmPvPChallengeSend() {
+    const selectEl = document.getElementById('challenge-player-select');
+    const targetPeerId = selectEl ? selectEl.value : null;
+    if (!targetPeerId) {
+      this.toast('⚠️ لا يوجد صياد آخر محدد للتحدي!');
+      return;
+    }
+
+    if (this.coins < 100) {
+      this.toast('⚠️ تحتاج إلى 100 دينار على الأقل لدخول رهان التحدي!');
+      return;
+    }
+
+    if (this.multiplayer) {
+      this.multiplayer.broadcastMessage('manama3d/rooms/pvp', {
+        type: 'PVP_OFFER',
+        senderName: this.multiplayer.playerName,
+        senderPeerId: this.multiplayer.peerId,
+        targetPeerId: targetPeerId,
+        wager: 100
+      });
+    }
+
+    document.getElementById('challenge-modal').classList.add('hidden');
+    if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+    this.toast('⚔️ تم إرسال تحدي الـ 100 دينار للصياد!');
+  }
+
+  receivePvPOffer(data) {
+    this.pendingPvPData = data;
+    const modal = document.getElementById('challenge-incoming-modal');
+    const textEl = document.getElementById('challenge-incoming-text');
+
+    if (textEl) textEl.innerText = `⚔️ يتحداك الصياد [${data.senderName}] في مسابقة صيد 60 ثانية برهان 100 دينار!`;
+
+    if (modal) {
+      this.player.unlockPointer();
+      modal.classList.remove('hidden');
+    }
+  }
+
+  acceptIncomingPvP() {
+    const modal = document.getElementById('challenge-incoming-modal');
+    if (modal) modal.classList.add('hidden');
+
+    if (!this.pendingPvPData) return;
+
+    if (this.coins < 100) {
+      this.toast('⚠️ ليس لديك 100 دينار لدخول رهان التحدي!');
+      return;
+    }
+
+    // Deduct 100 wager
+    this.coins -= 100;
+    this.updateHUD();
+
+    if (this.multiplayer) {
+      this.multiplayer.broadcastMessage('manama3d/rooms/pvp', {
+        type: 'PVP_ACCEPT',
+        senderPeerId: this.multiplayer.peerId,
+        targetPeerId: this.pendingPvPData.senderPeerId,
+        acceptorName: this.multiplayer.playerName
+      });
+    }
+
+    const oppName = this.pendingPvPData.senderName;
+    this.pendingPvPData = null;
+    this.start1v1Challenge(oppName);
+  }
+
+  declineIncomingPvP() {
+    const modal = document.getElementById('challenge-incoming-modal');
+    if (modal) modal.classList.add('hidden');
+    this.pendingPvPData = null;
+    if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+    this.toast('✕ تم رفض دعوة التحدي.');
+  }
+
+  receivePvPAccept(data) {
+    if (this.coins >= 100) {
+      this.coins -= 100;
+      this.updateHUD();
+      this.start1v1Challenge(data.acceptorName);
+    }
   }
 
   start1v1Challenge(targetName = 'الخصم') {
@@ -1322,14 +1556,14 @@ class GameController {
     if (oppEl) oppEl.innerText = targetName;
 
     hud.classList.remove('hidden');
-    this.toast(`⚔️ بدأ تحدي الصيد 1v1 ضد [${targetName}]! اصطد أكبر عدد خلال 60 ثانية!`);
+    this.toast(`⚔️ بدأ تحدي الصيد 1v1 برهان (200 دينار) ضد [${targetName}]!`);
 
     clearInterval(this._challengeInterval);
     this._challengeInterval = setInterval(() => {
       this.challengeTimer--;
       document.getElementById('challenge-time-left').innerText = `${this.challengeTimer} ثانية`;
 
-      if (Math.random() < 0.25) {
+      if (Math.random() < 0.2) {
         this.oppChallengeScore++;
         document.getElementById('opp-challenge-score').innerText = this.oppChallengeScore;
       }
@@ -1340,19 +1574,18 @@ class GameController {
         hud.classList.add('hidden');
 
         if (this.myChallengeScore > this.oppChallengeScore) {
-          const reward = 100;
+          const reward = 200; // Full 200 Coin pot!
           this.coins += reward;
           this.updateHUD();
           if (sounds.playVictorySound) sounds.playVictorySound();
-          confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-          this.toast(`🏆 مبروك! فزت على [${targetName}] (${this.myChallengeScore} مقابل ${this.oppChallengeScore}) وربحت 100 دينار!`);
+          this.triggerConfetti({ particleCount: 180, spread: 100, origin: { y: 0.5 } });
+          this.toast(`🏆 مبروك! فزت بالتحدي على [${targetName}] (${this.myChallengeScore} مقابل ${this.oppChallengeScore}) وربحت 200 دينار كاملة!`);
         } else if (this.myChallengeScore < this.oppChallengeScore) {
-          const penalty = Math.min(this.coins, 50);
-          this.coins -= penalty;
-          this.updateHUD();
-          this.toast(`💔 خسرت التحدي أمام [${targetName}] (${this.myChallengeScore} مقابل ${this.oppChallengeScore}) وتم خصم ${penalty} دينار!`);
+          this.toast(`💔 خسرت التحدي أمام [${targetName}] (${this.myChallengeScore} مقابل ${this.oppChallengeScore}) وخسرت الرهان!`);
         } else {
-          this.toast(`🤝 تعادل في مسابقة الصيد ضد [${targetName}]!`);
+          this.coins += 100; // Refund wager
+          this.updateHUD();
+          this.toast(`🤝 تعادل في مسابقة الصيد ضد [${targetName}] وتم استرجاع الـ 100 دينار!`);
         }
       }
     }, 1000);

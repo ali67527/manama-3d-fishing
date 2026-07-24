@@ -421,9 +421,41 @@ export class EnvironmentManager {
         this.scene.add(seaWall);
 
         const pierMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.7 });
-        const pier = new THREE.Mesh(new THREE.BoxGeometry(22, 3, 72), pierMat);
-        pier.position.set(0, 1.8, 30);
+        const pier = new THREE.Mesh(new THREE.BoxGeometry(22, 3, 54), pierMat);
+        pier.position.set(0, 1.8, 22);
         this.scene.add(pier);
+
+        // Wooden Staircase for Pier Exit (5 steps connecting pier to promenade)
+        const stairMat = new THREE.MeshStandardMaterial({ color: 0x4a3224, roughness: 0.6 });
+        for (let i = 0; i < 5; i++) {
+            const step = new THREE.Mesh(new THREE.BoxGeometry(8, 0.4, 1.2), stairMat);
+            step.position.set(0, 1.8 + (i * 0.4), -4 + (i * 0.8));
+            this.scene.add(step);
+        }
+
+        // Parked Shoreline Bahraini Boat on Sand
+        const boatGroup = new THREE.Group();
+        boatGroup.position.set(45, 0.6, 8);
+        boatGroup.rotation.y = Math.PI / 6;
+
+        const hullGeo = new THREE.ConeGeometry(2.5, 9, 8);
+        hullGeo.rotateX(Math.PI / 2);
+        hullGeo.scale(1, 0.5, 1);
+        const hullMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.8 });
+        const hull = new THREE.Mesh(hullGeo, hullMat);
+
+        const deckMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.7 });
+        const deck = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.2, 6), deckMat);
+        deck.position.y = 0.5;
+
+        // Oars
+        const oarMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
+        const oar1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 5), oarMat);
+        oar1.rotation.z = Math.PI / 3;
+        oar1.position.set(1.2, 0.8, 0);
+
+        boatGroup.add(hull, deck, oar1);
+        this.scene.add(boatGroup);
 
         // Bucket
         const bucketGroup = new THREE.Group();

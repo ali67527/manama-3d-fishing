@@ -63,71 +63,71 @@ export const BAHRAINI_FISHES = [
     bodyType: 'small',
     pullForce: 0.6,
     resistInterval: 2800,
-    description: 'سمكة فضية صغيرة الحجم سريعة الحركة قرب السواحل الرملية.'
+    description: 'سمكة صغيرة لامعة تتواجد في المياه الضحلة والسواحل الرملية.'
   },
   {
     id: 'sbeity',
-    nameAr: 'صبيطي ملكي',
-    nameEn: 'Sbeity (Silvery Bream)',
+    nameAr: 'سبيطي ملكي',
+    nameEn: 'Sbeity (Seabream)',
     rarity: 'نادر',
     rarityClass: 'rare',
     minWeight: 1.5,
-    maxWeight: 6.0,
-    basePrice: 12.0,
-    color: 0x95a5a6,
-    accentColor: 0x34495e,
-    bodyType: 'streamlined',
+    maxWeight: 5.5,
+    basePrice: 16.0,
+    color: 0x34495e,
+    accentColor: 0x1abc9c,
+    bodyType: 'torpedo',
     pullForce: 1.6,
     resistInterval: 1600,
-    description: 'سمكة ذكية ومقاومة جداً، تعتبر هدفاً رئيسياً لكل صياد بحريني محترف.'
+    description: 'ملك الأسماك البحرينية! سمكة حذرة وقوية جداً تتطلب مهارة عالية لسحبها.'
   },
   {
     id: 'agam',
-    nameAr: 'عقام جبار',
+    nameAr: 'قام (عقام)',
     nameEn: 'Agam (Barracuda)',
     rarity: 'نادر',
     rarityClass: 'rare',
     minWeight: 2.0,
-    maxWeight: 8.0,
-    basePrice: 15.0,
-    color: 0x7f8c8d,
-    accentColor: 0x2c3e50,
+    maxWeight: 7.0,
+    basePrice: 22.0,
+    color: 0x27ae60,
+    accentColor: 0x2ecc71,
     bodyType: 'barracuda',
-    pullForce: 2.0,
-    resistInterval: 1300,
-    description: 'مفترس سريع بجسم اسطواني مستطيل وأسنان حادة وقوة سحب هائلة.'
+    pullForce: 1.9,
+    resistInterval: 1400,
+    description: 'مفترس سريع بجسم استواني طويل وأسنان حادة يهاجم الطعم بقوة عالية.'
   },
   {
     id: 'chanad',
-    nameAr: 'كنعد ذهبي',
+    nameAr: 'كنعد خليجي',
     nameEn: 'Chanad (King Mackerel)',
-    rarity: 'مبهر',
-    rarityClass: 'epic',
+    rarity: 'نادر',
+    rarityClass: 'rare',
     minWeight: 3.0,
-    maxWeight: 12.0,
-    basePrice: 22.0,
-    color: 0x3498db,
-    accentColor: 0xf1c40f,
-    bodyType: 'torpedo',
-    pullForce: 2.4,
-    resistInterval: 1100,
-    description: 'من أسرع وأغلى أسماك البحرين، جسم انسيابي كالصاوخ يقطع المياه بقوة.'
+    maxWeight: 10.0,
+    basePrice: 32.0,
+    color: 0x2980b9,
+    accentColor: 0x3498db,
+    bodyType: 'streamlined',
+    pullForce: 2.2,
+    resistInterval: 1200,
+    description: 'من أسرع وأقوى الأسماك السابحة في الأعماق، ذو قيمة اقتصادية وغذائية ممتازة.'
   },
   {
     id: 'hamour',
-    nameAr: 'هامور بحريني فاخر',
-    nameEn: 'Hamour (Grouper)',
+    nameAr: 'هامور بحريني أسطوري',
+    nameEn: 'Hamour (Bahraini Grouper)',
     rarity: 'أسطوري',
     rarityClass: 'legendary',
     minWeight: 4.0,
-    maxWeight: 18.0,
-    basePrice: 30.0,
+    maxWeight: 14.0,
+    basePrice: 55.0,
     color: 0xe67e22,
     accentColor: 0xd35400,
     bodyType: 'grouper',
-    pullForce: 2.8,
+    pullForce: 2.7,
     resistInterval: 900,
-    description: 'ملك أسماك الخليج بلا منازع! حجم ضخم وقوة سحب أسطورية تجني لك ثروة كبيرة.'
+    description: 'فخر البحرين والخليج! سمكة ضخمة أسطورية تعيش بين الشُعب والمكاسر.'
   },
   {
     id: 'naiser',
@@ -137,172 +137,223 @@ export const BAHRAINI_FISHES = [
     rarityClass: 'uncommon',
     minWeight: 0.6,
     maxWeight: 2.2,
-    basePrice: 7.0,
-    color: 0x1abc9c,
-    accentColor: 0x16a085,
+    basePrice: 8.0,
+    color: 0x9b59b6,
+    accentColor: 0x8e44ad,
     bodyType: 'sweetlips',
     pullForce: 1.2,
     resistInterval: 1900,
-    description: 'سمكة بكتف مرتفع وشفاه بارزة وألوان مميزة تعيش قرب الشعب المرجانية.'
+    description: 'سمكة ملونة بشفاه عريضة وخطوط أرجوانية زاهية.'
   },
   {
-    id: 'sobaity_yellow',
-    nameAr: 'صبيطي أصفر الزعنفة',
-    nameEn: 'Yellowfin Seabream',
+    id: 'sobaity_gold',
+    nameAr: 'صبيطي ذهبي',
+    nameEn: 'Golden Seabream',
     rarity: 'نادر',
     rarityClass: 'rare',
-    minWeight: 1.2,
-    maxWeight: 4.5,
-    basePrice: 75,
+    minWeight: 1.8,
+    maxWeight: 6.0,
+    basePrice: 20.0,
     color: 0xf39c12,
     accentColor: 0xe67e22,
     bodyType: 'yellowfin',
-    pullForce: 1.5,
-    resistInterval: 1700,
-    description: 'نوع نادر من الصبيطي يتميز بزعانفه ذات اللون الأصفر الذهبي البراق.'
+    pullForce: 1.7,
+    resistInterval: 1500,
+    description: 'نوع فاخر جداً بذيل وزعانف صفراء براقة وقوة سحب متواصلة.'
   },
   {
     id: 'bayad',
-    nameAr: 'بياض حمراء',
-    nameEn: 'Bayad (Red Snapper)',
-    rarity: 'مبهر',
-    rarityClass: 'epic',
-    minWeight: 2.5,
-    maxWeight: 9.0,
-    basePrice: 150,
-    color: 0xe74c3c,
-    accentColor: 0xc0392b,
+    nameAr: 'بياض المنامة',
+    nameEn: 'Bayad (Snapper)',
+    rarity: 'غير عادي',
+    rarityClass: 'uncommon',
+    minWeight: 0.8,
+    maxWeight: 3.2,
+    basePrice: 10.0,
+    color: 0xecf0f1,
+    accentColor: 0x95a5a6,
     bodyType: 'snapper',
-    pullForce: 2.2,
-    resistInterval: 1200,
-    description: 'سمكة بياض ذات لون أحمر ياقوتي وجسم قوي تعيش في أعماق المياه الخليجية.'
+    pullForce: 1.3,
+    resistInterval: 1800,
+    description: 'سمكة بيضاء براقة تعيش قرب كورنيش المنامة ولها طعم شهي.'
   },
   {
     id: 'jesh',
-    nameAr: 'جش ناعم',
+    nameAr: 'جش عالي السرعة',
     nameEn: 'Jesh (Trevally)',
+    rarity: 'نادر',
+    rarityClass: 'rare',
+    minWeight: 1.2,
+    maxWeight: 4.8,
+    basePrice: 18.0,
+    color: 0x16a085,
+    accentColor: 0x1abc9c,
+    bodyType: 'trevally',
+    pullForce: 1.8,
+    resistInterval: 1300,
+    description: 'سمكة رياضية مفلطحة وسريعة القفز فوق سطح البحر.'
+  },
+  {
+    id: 'sheim',
+    nameAr: 'شيم خوري أسطوري',
+    nameEn: 'Sheim (Threadfin)',
     rarity: 'أسطوري',
     rarityClass: 'legendary',
     minWeight: 3.5,
-    maxWeight: 15.0,
-    basePrice: 250,
-    color: 0x9b59b6,
-    accentColor: 0x8e44ad,
+    maxWeight: 12.0,
+    basePrice: 60.0,
+    color: 0xe74c3c,
+    accentColor: 0xc0392b,
+    bodyType: 'high_back',
+    pullForce: 2.8,
+    resistInterval: 850,
+    description: 'من أندر وأغلى أسماك البحرين التاريخية، ذات خيوط صدرية ممتدة.'
+  },
+  {
+    id: 'rabeeh',
+    nameAr: 'ربيب بحريني',
+    nameEn: 'Golden Trevally',
+    rarity: 'غير عادي',
+    rarityClass: 'uncommon',
+    minWeight: 0.9,
+    maxWeight: 3.5,
+    basePrice: 11.0,
+    color: 0xf1c40f,
+    accentColor: 0xd4af37,
     bodyType: 'trevally',
-    pullForce: 2.6,
-    resistInterval: 1000,
-    description: 'سمكة سريعة للغاية بجسم مفلطح وقوي، تقاوم بشراسة عند تعليقها بالسنارة.'
+    pullForce: 1.4,
+    resistInterval: 1700,
+    description: 'سمكة ذهبية بشرائط سوداء رفيعة تحب السباحة في مجموعات.'
+  },
+  {
+    id: 'hamra',
+    nameAr: 'حمراء خائرية',
+    nameEn: 'Red Emperor',
+    rarity: 'نادر',
+    rarityClass: 'rare',
+    minWeight: 2.2,
+    maxWeight: 8.0,
+    basePrice: 28.0,
+    color: 0xc0392b,
+    accentColor: 0x962d22,
+    bodyType: 'snapper',
+    pullForce: 2.0,
+    resistInterval: 1250,
+    description: 'سمكة حمراء زاهية تعيش في الأعماق الصخرية وتتمتع بقوة شد عالية.'
+  },
+  {
+    id: 'qarqfan',
+    nameAr: 'قرقفان مخطط',
+    nameEn: 'Qarqfan (Striped Seabream)',
+    rarity: 'عادي',
+    rarityClass: 'common',
+    minWeight: 0.3,
+    maxWeight: 1.5,
+    basePrice: 3.5,
+    color: 0xbdc3c7,
+    accentColor: 0x34495e,
+    bodyType: 'striped',
+    pullForce: 0.9,
+    resistInterval: 2400,
+    description: 'سمكة شاطئية مخططة بخطوط فضية وسوداء سهلة الصيد للمبتدئين.'
   }
 ];
 
 export function create3DFishMesh(fishData) {
-  const fishGroup = new THREE.Group();
-
-  const mainColor = fishData.color || 0x3498db;
-  const accentColor = fishData.accentColor || 0x2980b9;
-
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: mainColor,
+  const group = new THREE.Group();
+  const mainMat = new THREE.MeshStandardMaterial({
+    color: fishData.color,
+    emissive: fishData.color,
+    emissiveIntensity: 0.25,
     roughness: 0.3,
-    metalness: 0.2
+    metalness: 0.4
+  });
+  const accentMat = new THREE.MeshStandardMaterial({
+    color: fishData.accentColor,
+    roughness: 0.4
   });
 
-  const finMat = new THREE.MeshStandardMaterial({
-    color: accentColor,
-    roughness: 0.4,
-    side: THREE.DoubleSide
-  });
-
-  let bodyMesh;
-
-  // ANATOMICALLY PROPORTIONAL FISH BODY GEOMETRIES
-  if (fishData.bodyType === 'grouper') {
-    // Thick oval body with taper
-    const geo = new THREE.SphereGeometry(0.7, 32, 16);
-    geo.scale(1.6, 1.0, 0.65);
-    bodyMesh = new THREE.Mesh(geo, bodyMat);
-  } else if (fishData.bodyType === 'torpedo' || fishData.bodyType === 'barracuda') {
-    // Elongated torpedo shape
-    const geo = new THREE.ConeGeometry(0.45, 2.4, 16);
-    geo.rotateZ(-Math.PI / 2);
-    geo.scale(1.0, 0.7, 0.7);
-    bodyMesh = new THREE.Mesh(geo, bodyMat);
-  } else if (fishData.bodyType === 'striped' || fishData.bodyType === 'high_back') {
-    // Tall diamond oval
-    const geo = new THREE.SphereGeometry(0.65, 32, 16);
-    geo.scale(1.4, 1.3, 0.55);
-    bodyMesh = new THREE.Mesh(geo, bodyMat);
-  } else {
-    // Standard sleek stream fish
-    const geo = new THREE.SphereGeometry(0.6, 32, 16);
-    geo.scale(1.5, 0.85, 0.5);
-    bodyMesh = new THREE.Mesh(geo, bodyMat);
+  let bodyGeo;
+  switch (fishData.bodyType) {
+    case 'grouper':
+      bodyGeo = new THREE.SphereGeometry(0.7, 16, 16);
+      bodyGeo.scale(1.4, 0.9, 0.6);
+      break;
+    case 'barracuda':
+      bodyGeo = new THREE.CylinderGeometry(0.2, 0.3, 2.2, 12);
+      bodyGeo.rotateZ(Math.PI / 2);
+      break;
+    case 'streamlined':
+      bodyGeo = new THREE.ConeGeometry(0.45, 1.8, 12);
+      bodyGeo.rotateZ(-Math.PI / 2);
+      break;
+    case 'high_back':
+      bodyGeo = new THREE.SphereGeometry(0.65, 16, 16);
+      bodyGeo.scale(1.2, 1.3, 0.45);
+      break;
+    case 'sweetlips':
+    case 'yellowfin':
+    case 'snapper':
+    case 'trevally':
+    case 'striped':
+    case 'oval':
+    default:
+      bodyGeo = new THREE.SphereGeometry(0.6, 16, 16);
+      bodyGeo.scale(1.3, 0.8, 0.4);
+      break;
   }
 
-  fishGroup.add(bodyMesh);
+  const bodyMesh = new THREE.Mesh(bodyGeo, mainMat);
+  group.add(bodyMesh);
 
-  // PROPORTIONAL EYES (Small, correctly placed on head sides)
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
+  // Tail fin
+  const tailGeo = new THREE.BufferGeometry();
+  const tailVertices = new Float32Array([
+    -0.7, 0, 0,
+    -1.3, 0.5, 0,
+    -1.3, -0.5, 0
+  ]);
+  tailGeo.setAttribute('position', new THREE.BufferAttribute(tailVertices, 3));
+  tailGeo.computeVertexNormals();
+  const tailMesh = new THREE.Mesh(tailGeo, accentMat);
+  group.add(tailMesh);
 
-  // Left Eye
-  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), eyeMat);
-  eyeL.position.set(0.55, 0.12, 0.22);
-  const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), pupilMat);
-  pupilL.position.set(0.58, 0.12, 0.26);
-  fishGroup.add(eyeL, pupilL);
+  // Dorsal fin
+  const dorsalGeo = new THREE.BufferGeometry();
+  const dorsalVertices = new Float32Array([
+    0.2, 0.5, 0,
+    -0.4, 0.9, 0,
+    -0.5, 0.4, 0
+  ]);
+  dorsalGeo.setAttribute('position', new THREE.BufferAttribute(dorsalVertices, 3));
+  dorsalGeo.computeVertexNormals();
+  const dorsalMesh = new THREE.Mesh(dorsalGeo, accentMat);
+  group.add(dorsalMesh);
 
-  // Right Eye
-  const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), eyeMat);
-  eyeR.position.set(0.55, 0.12, -0.22);
-  const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), pupilMat);
-  pupilR.position.set(0.58, 0.12, -0.26);
-  fishGroup.add(eyeR, pupilR);
+  // Eyes (White + Black pupil)
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const eyeGeo = new THREE.SphereGeometry(0.1, 8, 8);
+  const pupilGeo = new THREE.SphereGeometry(0.05, 8, 8);
 
-  // PROPORTIONAL MOUTH (Small at snout tip)
-  const mouth = new THREE.Mesh(new THREE.RingGeometry(0.03, 0.07, 12), new THREE.MeshBasicMaterial({ color: 0xc0392b, side: THREE.DoubleSide }));
-  mouth.rotation.y = Math.PI / 2;
-  mouth.position.set(0.78, -0.05, 0);
-  fishGroup.add(mouth);
+  const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+  leftEye.position.set(0.4, 0.15, 0.22);
+  const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+  leftPupil.position.set(0.44, 0.15, 0.28);
 
-  // TAIL FIN (Caudal Fin at rear tip -0.85)
-  const tailShape = new THREE.Shape();
-  tailShape.moveTo(0, 0);
-  tailShape.lineTo(-0.45, 0.35);
-  tailShape.lineTo(-0.35, 0);
-  tailShape.lineTo(-0.45, -0.35);
-  tailShape.closePath();
+  const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+  rightEye.position.set(0.4, 0.15, -0.22);
+  const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+  rightPupil.position.set(0.44, 0.15, -0.28);
 
-  const tailGeo = new THREE.ShapeGeometry(tailShape);
-  const tailMesh = new THREE.Mesh(tailGeo, finMat);
-  tailMesh.position.set(-0.75, 0, 0);
-  fishGroup.add(tailMesh);
+  group.add(leftEye, leftPupil, rightEye, rightPupil);
 
-  // DORSAL FIN (Top)
-  const dorsalShape = new THREE.Shape();
-  dorsalShape.moveTo(-0.4, 0);
-  dorsalShape.lineTo(-0.1, 0.35);
-  dorsalShape.lineTo(0.3, 0);
-  dorsalShape.closePath();
+  // Mouth
+  const mouthMat = new THREE.MeshBasicMaterial({ color: 0xc0392b });
+  const mouthGeo = new THREE.SphereGeometry(0.09, 8, 8);
+  const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+  mouth.position.set(0.62, -0.05, 0);
+  group.add(mouth);
 
-  const dorsalGeo = new THREE.ShapeGeometry(dorsalShape);
-  const dorsalMesh = new THREE.Mesh(dorsalGeo, finMat);
-  dorsalMesh.position.set(0, 0.45, 0);
-  fishGroup.add(dorsalMesh);
-
-  // PECTORAL FINS (Side fins)
-  const pecGeo = new THREE.ConeGeometry(0.12, 0.35, 3);
-  pecGeo.rotateX(Math.PI / 2);
-
-  const pecL = new THREE.Mesh(pecGeo, finMat);
-  pecL.position.set(0.1, -0.15, 0.32);
-  pecL.rotation.y = Math.PI / 4;
-
-  const pecR = new THREE.Mesh(pecGeo, finMat);
-  pecR.position.set(0.1, -0.15, -0.32);
-  pecR.rotation.y = -Math.PI / 4;
-
-  fishGroup.add(pecL, pecR);
-
-  return fishGroup;
+  return group;
 }

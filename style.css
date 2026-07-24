@@ -839,6 +839,57 @@ html, body {
   background: rgba(0, 0, 0, 0.3);
 }
 
+/* 3D Character Studio Lobby Styles */
+.character-studio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 18px 0;
+  align-items: center;
+}
+
+.studio-preview-box {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(0, 210, 255, 0.4);
+  border-radius: 18px;
+  height: 240px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 25px rgba(0, 210, 255, 0.2);
+}
+
+.studio-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 210, 255, 0.25);
+  border: 1px solid #00d2ff;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+.studio-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Fishdex Locked Mystery Silhouette */
+.fishdex-card.fish-locked {
+  filter: grayscale(0.9) brightness(0.6);
+  border-color: rgba(0, 210, 255, 0.2) !important;
+  opacity: 0.7;
+}
+
+.fishdex-card.fish-locked .fish-name {
+  color: #a0aec0 !important;
+}
+
 .hidden {
   display: none !important;
 }
@@ -1072,56 +1123,99 @@ html, body {
   }
 
   .hotbar-container {
-    bottom: clamp(4px, 1vh, 8px);
-    padding: 2px 4px;
-    gap: clamp(2px, 0.5vw, 4px);
+    display: none !important; /* Hide hotbar on mobile touchscreens as requested */
   }
 
-  .hotbar-slot {
-    width: clamp(32px, 7vw, 42px);
-    height: clamp(36px, 8vh, 46px);
-    padding: 1px;
+  .hud-header {
+    padding: 4px 8px;
+    gap: 4px;
+    border-radius: 12px;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
 
-  .slot-icon {
-    font-size: clamp(0.8rem, 1.8vw, 1rem);
+  .header-left, .header-right {
+    gap: 4px;
+    flex-wrap: wrap;
   }
 
-  .slot-label {
-    font-size: clamp(0.5rem, 1.1vw, 0.6rem);
+  .logo-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+
+  .environment-status {
+    font-size: 0.65rem;
+  }
+
+  .stat-pill {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    background: rgba(0, 210, 255, 0.15);
+    border-color: rgba(0, 210, 255, 0.3);
+  }
+
+  .glass-btn {
+    padding: 4px 7px;
+    font-size: 0.72rem;
   }
 
   .modal-card, .catch-card, .start-modal {
-    padding: clamp(10px, 2vh, 16px);
-    width: 95vw;
-    max-height: 86vh;
+    padding: 16px;
+    width: 94vw;
+    max-height: 88vh;
     overflow-y: auto;
   }
 
   .start-header h1 {
-    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    font-size: 1.2rem;
   }
 
   .fishing-hud {
-    width: clamp(260px, 88vw, 450px);
-    bottom: clamp(60px, 14vh, 75px);
-    padding: clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 12px);
+    width: 90vw;
+    bottom: 75px;
+    padding: 8px 12px;
   }
+}
 
-  .meter-track {
-    height: clamp(8px, 1.5vh, 12px);
-  }
+/* Upgraded Catch Modal Buttons */
+.catch-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  justify-content: center;
+}
 
-  .hud-row {
-    font-size: clamp(0.65rem, 1.4vw, 0.78rem);
-  }
+.catch-actions .btn-primary {
+  background: linear-gradient(135deg, #00d2ff, #0083b0);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
+  border: 1.5px solid #00d2ff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-  .percent-badge {
-    font-size: clamp(0.6rem, 1.3vw, 0.72rem);
-  }
+.catch-actions .btn-primary:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.85);
+}
 
-  .meter-label {
-    font-size: clamp(0.6rem, 1.3vw, 0.72rem);
-  }
+.catch-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.catch-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
