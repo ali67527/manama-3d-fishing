@@ -2,15 +2,21 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>لعبة صيد السمك 3D - كورنيش المنامة | Manama 3D Fishing</title>
+  
+  <!-- Mobile PWA & Auto-Update Metadata -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#00d2ff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="صيد المنامة 3D" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css" />
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- Global Internet MQTT WebSocket Engine for Instant Cross-Device Multiplayer -->
-  <script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
 </head>
 <body>
   <!-- Intro Splash Screen: 3rna studio -->
@@ -61,6 +67,21 @@
       <span class="prompt-text" id="prompt-text">تفاعل</span>
     </div>
 
+    <!-- Mobile Virtual Touch Joystick & Touch Action Buttons -->
+    <div id="mobile-controls" class="mobile-controls">
+      <!-- Touch Joystick (Bottom Left) -->
+      <div id="joystick-zone" class="joystick-zone">
+        <div id="joystick-knob" class="joystick-knob"></div>
+      </div>
+
+      <!-- Touch Action Buttons (Bottom Right) -->
+      <div class="mobile-buttons-zone">
+        <button id="mobile-btn-cast" class="mobile-btn primary">🎣 رمي/سحب</button>
+        <button id="mobile-btn-jump" class="mobile-btn">🚀 قفز</button>
+        <button id="mobile-btn-interact" class="mobile-btn">✋ تفاعل E</button>
+      </div>
+    </div>
+
     <!-- Hotbar [1, 2, 3, 4, 5] -->
     <div id="hotbar-container" class="hotbar-container glass-card">
       <div class="hotbar-slot active" data-slot="1"><span class="slot-num">1</span><span class="slot-icon" id="slot-1-icon">🎣</span><span class="slot-label" id="slot-1-label">السنارة</span></div>
@@ -100,7 +121,7 @@
       </div>
 
       <div class="meter-guidance">
-        <span>اضغط مطولاً على Left Click لسحب السمكة عند التوقف</span>
+        <span>اضغط مطولاً على زر السحب لسحب السمكة عند التوقف</span>
         <small class="warning">⚠️ احذر! إذا قاومت السمكة وشددتها ينقطع الخيط ويقل التحمل!</small>
       </div>
     </div>
@@ -291,6 +312,24 @@
     </div>
 
   </div>
+
+  <!-- PWA Service Worker Registration for Instant Auto-Updates -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          reg.onupdatefound = () => {
+            const installing = reg.installing;
+            installing.onstatechange = () => {
+              if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                window.location.reload(); // Auto-update immediately when code updates!
+              }
+            };
+          };
+        }).catch(err => {});
+      });
+    }
+  </script>
 
   <script type="module" src="./src/main.js"></script>
 </body>

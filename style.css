@@ -892,3 +892,72 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Mobile Controls & Touch Joystick */
+.mobile-controls {
+  display: none;
+  position: absolute;
+  bottom: 25px;
+  left: 0;
+  width: 100%;
+  height: 140px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+  }
+}
+
+.joystick-zone {
+  width: 110px;
+  height: 110px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2.5px solid rgba(0, 210, 255, 0.6);
+  border-radius: 50%;
+  position: relative;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick-knob {
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #00d2ff, #0083b0);
+  border-radius: 50%;
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.8);
+  pointer-events: none;
+}
+
+.mobile-buttons-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.mobile-btn {
+  padding: 12px 20px;
+  background: rgba(10, 25, 47, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: #fff;
+  font-family: var(--font-ar);
+  font-weight: 800;
+  font-size: 0.95rem;
+  touch-action: manipulation;
+}
+
+.mobile-btn.primary {
+  background: linear-gradient(135deg, #00d2ff, #0083b0);
+  border-color: #00d2ff;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+}
+

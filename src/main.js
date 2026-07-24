@@ -443,6 +443,21 @@ class GameController {
       }
     });
     window.addEventListener('mouseup', (e) => { if (e.button === 0) this.isHoldingLeftClick = false; });
+
+    const btnMobileCast = document.getElementById('mobile-btn-cast');
+    if (btnMobileCast) {
+      btnMobileCast.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.isHoldingLeftClick = true;
+        if (this.gameState === 'ROAMING' && this.player.activeSlot === 1) {
+          this.startCast();
+        }
+      });
+      btnMobileCast.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.isHoldingLeftClick = false;
+      });
+    }
   }
 
   startCast() {

@@ -1,0 +1,28 @@
+{
+  "name": "صيد المنامة 3D - 3rna studio",
+  "short_name": "صيد المنامة 3D",
+  "description": "لعبة صيد الأسماك الاحترافية 3D في خليج المنامة بالبحرين - أونلاين ومجانية",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#030d1a",
+  "theme_color": "#00d2ff",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f3a3.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f3a3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f3a3.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
