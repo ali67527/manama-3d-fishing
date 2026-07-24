@@ -2,11 +2,14 @@
   "name": "manama-3d-fishing",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "description": "لعبة صيد المنامة 3D - 3rna studio",
+  "author": "3rna studio",
+  "main": "electron-main.cjs",
   "scripts": {
     "dev": "vite --host --port 3000",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "package-exe": "npx electron-packager . \"صيد المنامة 3D\" --platform=win32 --arch=x64 --electron-version=28.2.0 --overwrite"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
