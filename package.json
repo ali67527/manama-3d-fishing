@@ -12,6 +12,9 @@
     "package-exe": "npx electron-packager . \"صيد المنامة 3D\" --platform=win32 --arch=x64 --electron-version=28.2.0 --overwrite"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/cli": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
     "canvas-confetti": "^1.9.4",
     "lucide": "^1.26.0",
     "mqtt": "^5.15.2",

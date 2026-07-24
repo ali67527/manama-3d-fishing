@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">صيد المنامة 3D</string>
+    <string name="title_activity_main">صيد المنامة 3D</string>
+    <string name="package_name">com.arna.manama3dfishing</string>
+    <string name="custom_url_scheme">com.arna.manama3dfishing</string>
+</resources>
