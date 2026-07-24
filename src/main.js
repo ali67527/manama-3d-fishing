@@ -321,10 +321,48 @@ class GameController {
       document.getElementById('server-browser-modal').classList.remove('hidden');
     });
 
-    document.getElementById('btn-close-servers').addEventListener('click', () => {
-      document.getElementById('server-browser-modal').classList.add('hidden');
-      if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
-    });
+    // Settings Modal Listeners
+    const btnSettings = document.getElementById('btn-settings');
+    const modalSettings = document.getElementById('settings-modal');
+    const btnCloseSettings = document.getElementById('btn-close-settings');
+    const btnSaveSettings = document.getElementById('btn-save-settings');
+
+    if (btnSettings && modalSettings) {
+      btnSettings.addEventListener('click', () => {
+        this.player.unlockPointer();
+        modalSettings.classList.remove('hidden');
+      });
+    }
+
+    if (btnCloseSettings && modalSettings) {
+      btnCloseSettings.addEventListener('click', () => {
+        modalSettings.classList.add('hidden');
+        if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+      });
+    }
+
+    if (btnSaveSettings) {
+      btnSaveSettings.addEventListener('click', () => {
+        const btnScale = document.getElementById('setting-btn-size').value;
+        const quality = document.getElementById('setting-quality').value;
+        this.applySettings(btnScale, quality);
+        if (modalSettings) modalSettings.classList.add('hidden');
+        if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+        if (sounds.playClick) sounds.playClick();
+        this.toast('✅ تم تطبيق الإعدادات بنجاح!');
+      });
+    }
+
+    // Load saved settings
+    try {
+      const savedStr = localStorage.getItem('manama_settings');
+      if (savedStr) {
+        const s = JSON.parse(savedStr);
+        if (s.btnScalePct) document.getElementById('setting-btn-size').value = s.btnScalePct;
+        if (s.quality) document.getElementById('setting-quality').value = s.quality;
+        this.applySettings(s.btnScalePct || '100', s.quality || 'medium');
+      }
+    } catch(e) {}
 
     document.getElementById('btn-create-server-confirm').addEventListener('click', () => {
       const nameInput = document.getElementById('new-server-name-input');
@@ -640,6 +678,29 @@ class GameController {
     if (this.catchProgress >= 100) {
       this.catchVictory();
     }
+  }
+
+  applySettings(btnScalePct, quality) {
+    // 1. Mobile button scale
+    const scaleVal = (parseFloat(btnScalePct) || 100) / 100;
+    document.documentElement.style.setProperty('--mobile-scale', scaleVal.toString());
+
+    // 2. Graphics quality
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+    if (quality === 'low') {
+      this.renderer.setPixelRatio(1.0);
+      this.renderer.shadowMap.enabled = false;
+    } else if (quality === 'medium') {
+      this.renderer.setPixelRatio(1.25);
+      this.renderer.shadowMap.enabled = !isMobile;
+    } else if (quality === 'high') {
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
+      this.renderer.shadowMap.enabled = true;
+    }
+
+    try {
+      localStorage.setItem('manama_settings', JSON.stringify({ btnScalePct, quality }));
+    } catch (e) {}
   }
 
   catchVictory() {

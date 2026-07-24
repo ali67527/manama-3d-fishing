@@ -807,8 +807,8 @@ export class EnvironmentManager {
     }
 
     setTimeOfDay(mode) {
+        if (mode === 'night') mode = 'day'; // NIGHT COMPLETELY REMOVED
         this.timeMode = mode;
-        const isNight = mode === 'night';
 
         if (mode === 'day') {
             this.scene.background.setHex(0x74b9ff);
@@ -826,20 +826,12 @@ export class EnvironmentManager {
             this.dirLight.color.setHex(0xffb703);
             this.dirLight.intensity = 2.2;
             if (this.waterMesh) this.waterMesh.material.color.setHex(0x0066ff);
-        } else if (isNight) {
-            this.scene.background.setHex(0x0a192f);
-            this.scene.fog.color.setHex(0x0a192f);
-            this.ambientLight.color.setHex(0x556688);
-            this.ambientLight.intensity = 0.6;
-            this.dirLight.color.setHex(0x70a1ff);
-            this.dirLight.intensity = 0.7;
-            if (this.waterMesh) this.waterMesh.material.color.setHex(0x002288);
         }
 
         this.streetLights.forEach(sl => {
-            sl.light.intensity = isNight ? 8.5 : 0.8;
-            sl.light.distance = isNight ? 65 : 25;
-            sl.bulb.material.color.setHex(isNight ? 0xffea00 : 0xfffa65);
+            sl.light.intensity = 1.0;
+            sl.light.distance = 30;
+            sl.bulb.material.color.setHex(0xfffa65);
         });
     }
 
@@ -858,22 +850,19 @@ export class EnvironmentManager {
     }
 
     update(delta, time) {
-        // EXACT 20-SECOND SUNSET TRANSITION
+        // DAY & SUNSET ONLY CYCLE (NO NIGHT)
         if (this.autoTimeEnabled) {
             this.dayCycleTimer += delta;
 
-            if (this.timeMode === 'day' && this.dayCycleTimer > 300) {
+            if (this.timeMode === 'day' && this.dayCycleTimer > 600) {
                 this.setTimeOfDay('sunset');
                 this.sunsetTimer = 0;
             } else if (this.timeMode === 'sunset') {
                 this.sunsetTimer += delta;
-                if (this.sunsetTimer >= 20.0) {
-                    this.setTimeOfDay('night');
+                if (this.sunsetTimer >= 60.0) {
+                    this.setTimeOfDay('day');
                     this.dayCycleTimer = 0;
                 }
-            } else if (this.timeMode === 'night' && this.dayCycleTimer > 180) {
-                this.setTimeOfDay('day');
-                this.dayCycleTimer = 0;
             }
         }
 

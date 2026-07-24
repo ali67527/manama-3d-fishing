@@ -902,6 +902,8 @@ html, body {
   height: 130px;
   z-index: 100;
   pointer-events: none;
+  transform: scale(var(--mobile-scale, 1.0));
+  transform-origin: bottom center;
 }
 
 .joystick-zone {

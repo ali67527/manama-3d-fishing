@@ -47,6 +47,7 @@
         <div class="stat-pill"><span>🧊</span><span class="stat-val" id="cooler-count">0/4</span><span class="stat-lbl">ثلاجة</span></div>
         <div class="stat-pill"><span>🐟</span><span class="stat-val" id="catches-count">0</span><span class="stat-lbl">صيد</span></div>
         <button id="btn-sound" class="glass-btn">🔊</button>
+        <button id="btn-settings" class="glass-btn btn-secondary">⚙️ الإعدادات</button>
         <button id="btn-servers" class="glass-btn btn-secondary">🌐 السيرفرات</button>
         <button id="btn-trade" class="glass-btn btn-secondary">🤝 مبادلة [K]</button>
         <button id="btn-challenge" class="glass-btn btn-primary">⚔️ تحدي 1v1 [C]</button>
@@ -277,6 +278,17 @@
       </div>
     </div>
 
+    <!-- Fishdex Modal -->
+    <div id="fishdex-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>📖 موسوعة أسماك خليج البحرين 3D</h3>
+          <button class="btn-close-modal" id="btn-close-fishdex">✕</button>
+        </div>
+        <div class="fishdex-grid" id="fishdex-grid-container"></div>
+      </div>
+    </div>
+
     <!-- Shop Modal -->
     <div id="shop-modal" class="fullscreen-overlay hidden">
       <div class="modal-card glass-card-lg">
@@ -300,15 +312,39 @@
         </div>
       </div>
     </div>
-
-    <!-- Fishdex Modal -->
-    <div id="fishdex-modal" class="fullscreen-overlay hidden">
-      <div class="modal-card glass-card-lg">
-        <div class="modal-header">
-          <h3>📖 موسوعة أسماك خليج البحرين 3D</h3>
-          <button class="btn-close-modal" id="btn-close-fishdex">✕</button>
-        </div>
         <div class="fishdex-grid" id="fishdex-grid-container"></div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg" style="max-width:460px">
+        <div class="modal-header">
+          <h3>⚙️ إعدادات اللعبة للجوال والكمبيوتر</h3>
+          <button class="btn-close-modal" id="btn-close-settings">✕</button>
+        </div>
+        <div class="settings-body" style="display:flex;flex-direction:column;gap:18px;padding:15px 0">
+          <div class="setting-group">
+            <label style="display:block;margin-bottom:8px;font-weight:700">📱 حجم أزرار تحكم الجوال:</label>
+            <select id="setting-btn-size" class="glass-input" style="width:100%;padding:10px">
+              <option value="80">صغير جداً (80%)</option>
+              <option value="100" selected>عادي متناسق (100%)</option>
+              <option value="120">كبير واضح (120%)</option>
+              <option value="140">ضخم جداً (140%)</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label style="display:block;margin-bottom:8px;font-weight:700">⚡ جودة الجرافيكس (Graphics Quality):</label>
+            <select id="setting-quality" class="glass-input" style="width:100%;padding:10px">
+              <option value="low">منخفضة Low (سلسة للجوالات الضعيفة 60FPS)</option>
+              <option value="medium" selected>متوسطة Medium (متوازنة لجميع الهواتف)</option>
+              <option value="high">عالية High (للكمبيوتر والأجهزة القوية)</option>
+            </select>
+          </div>
+        </div>
+        <button id="btn-save-settings" class="btn-primary" style="width:100%;padding:12px;margin-top:10px">
+          ✅ حفظ وتطبيق الإعدادات
+        </button>
       </div>
     </div>
 
