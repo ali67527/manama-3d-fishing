@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css" />
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- PeerJS for WebRTC Global Internet Multiplayer -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
   <div id="game-container"></div>
@@ -21,7 +23,7 @@
           <span class="title">صيد المنامة 3D</span>
         </div>
         <div class="environment-status">
-          <span id="time-display">🌅 غروب المنامة</span>
+          <span id="time-display">☀️ نهار المنامة</span>
           <span id="multiplayer-status" class="online-badge">🌐 السيرفر أونلاين</span>
         </div>
       </div>
@@ -60,23 +62,33 @@
       <div class="hotbar-slot" data-slot="5"><span class="slot-num">5</span><span class="slot-icon" id="slot-5-icon">✋</span><span class="slot-label" id="slot-5-label">فارغ</span></div>
     </div>
 
-    <!-- Fishing Meter HUD (FIXED BOTH METERS: CATCH PROGRESS % AND LINE HEALTH/TENSION %) -->
+    <!-- Fishing Meter HUD (GLOWING PROGRESS BARS FOR CATCH & LINE TENSION) -->
     <div id="fishing-hud" class="fishing-hud hidden glass-card">
       <div class="hud-row">
         <span class="fish-tag" id="fish-behavior-tag">🎣 السمكة تقاوم!</span>
-        <span id="fish-distance">📏 المسافة: 25 م</span>
+        <span id="fish-distance" class="dist-badge">📏 المسافة: 25 م</span>
       </div>
 
-      <!-- Meter 1: Fish Catch Progress % -->
+      <!-- Meter 1: Fish Catch Progress % Bar -->
       <div class="meter-box">
-        <div class="meter-label"><span>تقدم سحب السمكة (Catch Progress)</span><span id="catch-progress-val">0%</span></div>
-        <div class="meter-bar"><div id="catch-progress-fill" class="meter-fill blue-fill" style="width:0%"></div></div>
+        <div class="meter-label">
+          <span>تقدم سحب السمكة (Catch Progress)</span>
+          <span id="catch-progress-val" class="percent-badge">0%</span>
+        </div>
+        <div class="meter-track">
+          <div id="catch-progress-fill" class="meter-fill catch-blue-fill" style="width:0%"></div>
+        </div>
       </div>
 
-      <!-- Meter 2: Line Health / Tension % -->
+      <!-- Meter 2: Line Health / Tension % Bar -->
       <div class="meter-box">
-        <div class="meter-label"><span>تحمل وقوة الخيط (Line Health)</span><span id="line-health-val">100%</span></div>
-        <div class="meter-bar"><div id="line-health-fill" class="meter-fill health-green-fill" style="width:100%"></div></div>
+        <div class="meter-label">
+          <span>تحمل وقوة الخيط (Line Health)</span>
+          <span id="line-health-val" class="percent-badge health-green-text">100%</span>
+        </div>
+        <div class="meter-track">
+          <div id="line-health-fill" class="meter-fill health-green-fill" style="width:100%"></div>
+        </div>
       </div>
 
       <div class="meter-guidance">
@@ -101,8 +113,8 @@
       <div class="start-modal glass-card-lg">
         <div class="start-header">
           <span class="bahrain-badge">🇧🇭 مملكة البحرين - كورنيش المنامة 3D</span>
-          <h1>لعبة صيد الأسماك أونلاين</h1>
-          <p>أدخل اسمك واختر سيرفر للعب مع أصدقائك في خليج البحرين!</p>
+          <h1>لعبة صيد الأسماك الاحترافية أونلاين العالمية</h1>
+          <p>أدخل اسمك واصطد مع أصدقائك عبر الإنترنت في أي مكان في العالم!</p>
         </div>
 
         <div style="margin: 20px 0;">
@@ -118,8 +130,8 @@
           </button>
           <button id="btn-mode-online" class="mode-card highlight">
             <span class="mode-icon">🌐</span>
-            <h3>قائمة السيرفرات أونلاين (Server List)</h3>
-            <p>اختر سيرفر أو أنشئ سيرفرك الخاص ليلعب أصدقاؤك معك!</p>
+            <h3>سيرفرات أونلاين عالمية (Global Internet Room)</h3>
+            <p>انضم لغرفة أونلاين تشارك رابطها مع أصدقائك عبر الإنترنت!</p>
           </button>
         </div>
       </div>
@@ -129,17 +141,17 @@
     <div id="server-browser-modal" class="fullscreen-overlay hidden">
       <div class="modal-card glass-card-lg">
         <div class="modal-header">
-          <h3>🌐 قائمة السيرفرات الأونلاين (Server Browser)</h3>
+          <h3>🌐 سيرفرات الإنترنت العالمية (Global Server Browser)</h3>
           <button class="btn-close-modal" id="btn-close-servers">✕</button>
         </div>
 
-        <!-- Create Server Section -->
-        <div style="background:rgba(0,210,255,0.1);padding:15px;border-radius:12px;margin-bottom:15px;display:flex;gap:12px;align-items:center">
-          <input type="text" id="new-server-name-input" class="input-name" placeholder="اسم السيرفر الجديد..." style="flex:1" />
-          <button id="btn-create-server-confirm" class="btn-primary">➕ إنشاء سيرفر جديد</button>
+        <!-- Create / Join Room Section -->
+        <div style="background:rgba(0,210,255,0.1);padding:15px;border-radius:12px;margin-bottom:15px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="new-server-name-input" class="input-name" placeholder="ادخل كود/اسم الغرفة (مثال: room123)" style="flex:1" />
+          <button id="btn-create-server-confirm" class="btn-primary">➕ إنشاء / دخول الغرفة</button>
         </div>
 
-        <h4>السيرفرات المتاحة حالياً:</h4>
+        <h4>السيرفرات والغرف النشطة حالياً:</h4>
         <div id="servers-list-container" class="items-list" style="margin-top:10px"></div>
       </div>
     </div>

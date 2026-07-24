@@ -837,7 +837,9 @@ export class EnvironmentManager {
         }
 
         this.streetLights.forEach(sl => {
-            sl.light.intensity = isNight ? 3.5 : 0.5;
+            sl.light.intensity = isNight ? 8.5 : 0.8;
+            sl.light.distance = isNight ? 65 : 25;
+            sl.bulb.material.color.setHex(isNight ? 0xffea00 : 0xfffa65);
         });
     }
 
@@ -860,7 +862,7 @@ export class EnvironmentManager {
         if (this.autoTimeEnabled) {
             this.dayCycleTimer += delta;
 
-            if (this.timeMode === 'day' && this.dayCycleTimer > 60) {
+            if (this.timeMode === 'day' && this.dayCycleTimer > 300) {
                 this.setTimeOfDay('sunset');
                 this.sunsetTimer = 0;
             } else if (this.timeMode === 'sunset') {
@@ -869,7 +871,7 @@ export class EnvironmentManager {
                     this.setTimeOfDay('night');
                     this.dayCycleTimer = 0;
                 }
-            } else if (this.timeMode === 'night' && this.dayCycleTimer > 60) {
+            } else if (this.timeMode === 'night' && this.dayCycleTimer > 180) {
                 this.setTimeOfDay('day');
                 this.dayCycleTimer = 0;
             }

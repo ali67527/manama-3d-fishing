@@ -3,15 +3,16 @@ import * as THREE from 'three';
 export class RealtimeMultiplayerManager {
     constructor(gameController) {
         this.game = gameController;
-        this.playerName = 'صيad_المنامة';
-        this.currentServerName = 'سيرفر المنامة الرئيسي';
-        this.peerId = 'peer_' + Math.random().toString(36).substr(2, 9);
+        this.playerName = 'صياد_المنامة';
+        this.currentServerName = 'منامة_عام';
+        this.peerId = 'peer_' + Math.random().toString(36).substr(2, 7);
         
-        this.channel = new BroadcastChannel('manama_fishing_room');
-        this.remotePlayers = new Map(); // peerId -> { mesh, name, tagMesh, rodMesh, currentRodStyle }
+        this.channel = new BroadcastChannel('manama_fishing_global');
+        this.remotePlayers = new Map(); // peerId -> player object
         this.serversList = new Map();
 
-        this.setupNetworkListeners();
+        this.initPeerJS();
+        this.setupBroadcastChannel();
         this.startHeartbeat();
     }
 
@@ -21,38 +22,66 @@ export class RealtimeMultiplayerManager {
         }
     }
 
+    initPeerJS() {
+        try {
+            if (window.Peer) {
+                this.peer = new window.Peer(this.peerId, { debug: 1 });
+
+                this.peer.on('open', (id) => {
+                    this.peerId = id;
+                });
+
+                this.peer.on('connection', (conn) => {
+                    this.setupConnection(conn);
+                });
+            }
+        } catch (e) {
+            console.warn('PeerJS fallback to BroadcastChannel/LocalStorage');
+        }
+    }
+
+    setupConnection(conn) {
+        conn.on('data', (data) => {
+            this.handleIncomingMessage(data);
+        });
+    }
+
     createServer(serverName) {
         if (!serverName || !serverName.trim()) return;
-        const sId = 'server_' + Math.random().toString(36).substr(2, 7);
+        const sName = serverName.trim();
+        const sId = 'room_' + sName.replace(/\s+/g, '_');
+        
         const sData = {
             serverId: sId,
-            name: serverName.trim(),
+            name: sName,
             hostName: this.playerName,
             playerCount: 1,
             lastActive: Date.now()
         };
         this.serversList.set(sId, sData);
-        this.currentServerName = sData.name;
+        this.currentServerName = sName;
 
         this.broadcastMessage({
             type: 'ANNOUNCE_SERVER',
             server: sData
         });
 
-        this.game.toast(`🎉 تم إنشاء السيرفر [${sData.name}] بنجاح!`);
+        this.game.toast(`🎉 تم إنشاء وقبول السيرفر العالمي [${sName}] بنجاح!`);
     }
 
     joinServer(serverId) {
         const s = this.serversList.get(serverId);
         if (s) {
             this.currentServerName = s.name;
-            this.game.toast(`🌐 تم الانضمام للسيرفر [${s.name}] بنجاح!`);
+            this.game.toast(`🌐 تم الانضمام للسيرفر العالمي [${s.name}] بنجاح!`);
         }
     }
 
     broadcastMessage(msg) {
         msg.peerId = this.peerId;
         msg.timestamp = Date.now();
+        msg.serverRoom = this.currentServerName;
+
         try { this.channel.postMessage(msg); } catch (e) {}
 
         try {
@@ -60,31 +89,13 @@ export class RealtimeMultiplayerManager {
         } catch (e) {}
     }
 
-    setupNetworkListeners() {
-        const handleMsg = (data) => {
-            if (!data || data.peerId === this.peerId) return;
-
-            if (data.type === 'ANNOUNCE_SERVER') {
-                this.serversList.set(data.server.serverId, data.server);
-                if (this.game.renderServerBrowser) this.game.renderServerBrowser();
-            } else if (data.type === 'JOIN' || data.type === 'UPDATE') {
-                this.updateRemotePlayer(data);
-            } else if (data.type === 'LEAVE') {
-                this.removeRemotePlayer(data.peerId);
-            } else if (data.type === 'TRADE_REQUEST' && data.targetPeerId === this.peerId) {
-                this.game.receiveTradeRequest(data);
-            } else if (data.type === 'CHALLENGE_REQUEST' && data.targetPeerId === this.peerId) {
-                this.game.receiveChallengeRequest(data);
-            }
-        };
-
-        this.channel.onmessage = (event) => handleMsg(event.data);
+    setupBroadcastChannel() {
+        this.channel.onmessage = (event) => this.handleIncomingMessage(event.data);
 
         window.addEventListener('storage', (e) => {
             if (e.key === 'manama_net_msg' && e.newValue) {
                 try {
-                    const data = JSON.parse(e.newValue);
-                    handleMsg(data);
+                    this.handleIncomingMessage(JSON.parse(e.newValue));
                 } catch (err) {}
             }
         });
@@ -94,13 +105,30 @@ export class RealtimeMultiplayerManager {
         });
     }
 
+    handleIncomingMessage(data) {
+        if (!data || data.peerId === this.peerId) return;
+
+        if (data.type === 'ANNOUNCE_SERVER') {
+            this.serversList.set(data.server.serverId, data.server);
+            if (this.game.renderServerBrowser) this.game.renderServerBrowser();
+        } else if (data.type === 'JOIN' || data.type === 'UPDATE') {
+            this.updateRemotePlayer(data);
+        } else if (data.type === 'LEAVE') {
+            this.removeRemotePlayer(data.peerId);
+        } else if (data.type === 'TRADE_REQUEST' && data.targetPeerId === this.peerId) {
+            this.game.receiveTradeRequest(data);
+        } else if (data.type === 'CHALLENGE_REQUEST' && data.targetPeerId === this.peerId) {
+            this.game.receiveChallengeRequest(data);
+        }
+    }
+
     startHeartbeat() {
         setInterval(() => {
             this.broadcastMessage({
                 type: 'ANNOUNCE_SERVER',
                 server: {
                     serverId: 'server_' + this.peerId,
-                    name: `سيرفر ${this.playerName}`,
+                    name: this.currentServerName,
                     hostName: this.playerName,
                     playerCount: this.remotePlayers.size + 1
                 }
@@ -132,20 +160,16 @@ export class RealtimeMultiplayerManager {
     createDetailedHumanAvatar(name) {
         const pGroup = new THREE.Group();
 
-        // High Quality Thobe / Body Silhouette like the NPCs
         const thobeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
         const body = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.36, 2.5, 14), thobeMat);
         body.position.y = 1.25;
 
-        // Head Sphere
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), new THREE.MeshStandardMaterial({ color: 0xd2b48c }));
         head.position.y = 2.75;
 
-        // Ghutra Head Cap
         const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.6, 12), new THREE.MeshStandardMaterial({ color: 0xffffff }));
         ghutra.position.set(0, 3.1, 0);
 
-        // Detailed Facial Features (Eyes, Nose, Mouth)
         const face = new THREE.Group();
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
@@ -168,7 +192,6 @@ export class RealtimeMultiplayerManager {
 
         face.add(eyeL, pupilL, eyeR, pupilR, nose, mouth);
 
-        // Name Tag Above Head
         const tagMesh = this.createNameTagMesh(name);
         tagMesh.position.set(0, 3.65, 0);
 
@@ -245,7 +268,6 @@ export class RealtimeMultiplayerManager {
         pData.targetPos.set(data.position.x, 3.4, data.position.z);
         pData.targetRotY = data.rotationY;
 
-        // Update Rod Skin Model if Player Switched Rod
         if (pData.currentRodStyle !== data.rodStyle) {
             pData.mesh.remove(pData.rodMesh);
             pData.rodMesh = this.createCustom3DRodModel(data.rodStyle);
@@ -253,7 +275,6 @@ export class RealtimeMultiplayerManager {
             pData.currentRodStyle = data.rodStyle;
         }
 
-        // Smooth Interpolation
         pData.mesh.position.lerp(pData.targetPos, 0.45);
         pData.mesh.rotation.y = data.rotationY;
     }

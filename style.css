@@ -374,7 +374,7 @@ html, body {
   border-radius: 10px;
 }
 
-.blue-fill {
+.blue-fill, .catch-blue-fill {
   background: linear-gradient(90deg, #0083b0, #00d2ff);
   box-shadow: 0 0 12px #00d2ff;
 }
