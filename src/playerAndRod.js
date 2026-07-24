@@ -54,6 +54,7 @@ export class PlayerAndRodManager {
         case 'KeyA': case 'ArrowLeft':  this.moveLeft = true; break;
         case 'KeyD': case 'ArrowRight': this.moveRight = true; break;
         case 'ShiftLeft': case 'ShiftRight': this.isSprinting = true; break;
+        case 'KeyV': this.toggleCameraMode(); break;
         case 'Space':
           if (this.isGrounded) {
             this.velocityY = this.jumpForce;
@@ -451,5 +452,48 @@ export class PlayerAndRodManager {
       attr.needsUpdate = true;
       this.lineMesh.geometry.setDrawRange(0, segments);
     }
+  }
+
+  toggleCameraMode() {
+    this.cameraMode = (this.cameraMode === '3RD') ? '1ST' : '3RD';
+    if (!this.playerAvatarMesh) this.buildPlayerAvatarMesh();
+    if (this.playerAvatarMesh) {
+      this.playerAvatarMesh.visible = (this.cameraMode === '3RD');
+    }
+  }
+
+  buildPlayerAvatarMesh() {
+    if (this.playerAvatarMesh) this.scene.remove(this.playerAvatarMesh);
+
+    this.playerAvatarMesh = new THREE.Group();
+
+    const thobeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+    const thobe = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 1.6, 16), thobeMat);
+    thobe.position.y = 0.8;
+
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), headMat);
+    head.position.y = 1.8;
+
+    const ghutraMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.5, 12), ghutraMat);
+    ghutra.position.set(0, 2.05, 0);
+
+    const agalMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const agal = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.04, 8, 16), agalMat);
+    agal.rotation.x = Math.PI / 2;
+    agal.position.set(0, 2.0, 0);
+
+    this.playerAvatarMesh.add(thobe, head, ghutra, agal);
+    this.scene.add(this.playerAvatarMesh);
+  }
+
+  updateAvatarStyle(thobeColorHex = 0xffffff, headwearType = 'ghutra') {
+    if (!this.playerAvatarMesh) this.buildPlayerAvatarMesh();
+    this.playerAvatarMesh.traverse(child => {
+      if (child.isMesh && child.geometry.type === 'CylinderGeometry') {
+        child.material.color.setHex(thobeColorHex);
+      }
+    });
   }
 }

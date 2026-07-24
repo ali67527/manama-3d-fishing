@@ -595,10 +595,10 @@ export class EnvironmentManager {
 
     createDynamicNPCFishermen() {
         this.spotOptions = [
-            { x: -8.5, z: 45, rotY: -Math.PI / 2 },
-            { x: 8.5, z: 45, rotY: Math.PI / 2 },
-            { x: -8.5, z: 58, rotY: 0 },
-            { x: 8.5, z: 58, rotY: 0 }
+            { x: -8.5, z: 25, rotY: -Math.PI / 2 },
+            { x: 8.5, z: 25, rotY: Math.PI / 2 },
+            { x: -8.5, z: 42, rotY: 0 },
+            { x: 8.5, z: 42, rotY: 0 }
         ];
 
         for (let i = 0; i < 2; i++) {

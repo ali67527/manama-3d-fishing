@@ -492,6 +492,14 @@ class GameController {
       document.getElementById('btn-sound').innerText = m ? '🔇' : '🔊';
     });
 
+    const btnCamera = document.getElementById('btn-camera');
+    if (btnCamera) {
+      btnCamera.addEventListener('click', () => {
+        if (this.player) this.player.toggleCameraMode();
+        this.toast(`📷 تم تغيير نمط الكاميرا (${this.player.cameraMode === '3RD' ? 'منظور الشخص الثالث 3D' : 'منظور الشخص الأول'})`);
+      });
+    }
+
     // Trade Modal Button
     document.getElementById('btn-trade').addEventListener('click', () => {
       this.player.unlockPointer();
@@ -1143,63 +1151,38 @@ class GameController {
       const card = document.createElement('div');
       card.className = `fishdex-card ${isUnlocked ? '' : 'fish-locked'}`;
 
-      const canvasContainer = document.createElement('div');
-      canvasContainer.className = 'fishdex-preview-canvas';
-      canvasContainer.id = `fishdex-canvas-${idx}`;
-      card.appendChild(canvasContainer);
+      const iconBox = document.createElement('div');
+      iconBox.className = 'fishdex-preview-canvas';
+      iconBox.style.display = 'flex';
+      iconBox.style.alignItems = 'center';
+      iconBox.style.justifyContent = 'center';
+      iconBox.style.fontSize = '3.2rem';
+      iconBox.style.background = isUnlocked ? `radial-gradient(circle, #${f.color.toString(16).padStart(6, '0')}44 0%, rgba(0,0,0,0.6) 80%)` : 'rgba(0,210,255,0.1)';
+
+      if (isUnlocked) {
+        iconBox.innerHTML = '🐟';
+      } else {
+        iconBox.innerHTML = '❓';
+      }
+      card.appendChild(iconBox);
 
       const textContainer = document.createElement('div');
       if (isUnlocked) {
         textContainer.innerHTML = `
-          <h4 style="color:#00d2ff;margin-bottom:2px">${f.nameAr}</h4>
+          <h4 style="color:#00d2ff;margin-bottom:2px;font-weight:900">${f.nameAr}</h4>
           <small style="color:#aaa">${f.nameEn}</small>
-          <div style="margin-top:6px;font-size:0.8rem;color:#2ecc71">✅ ${d ? d.count : 1} صيد | أضخم: ${d ? d.maxWeight : f.minWeight} كجم</div>
+          <div style="margin-top:6px;font-size:0.8rem;color:#2ecc71;font-weight:700">✅ ${d ? d.count : 1} صيد | أضخم: ${d ? d.maxWeight : f.minWeight} كجم</div>
           <p style="font-size:0.75rem;color:#ddd;margin-top:4px">${f.description}</p>
         `;
       } else {
         textContainer.innerHTML = `
           <h4 style="color:#a0aec0;margin-bottom:2px">❓ ??? (غير مكتشف)</h4>
           <small style="color:#718096">Mystery Bahraini Fish</small>
-          <div style="margin-top:6px;font-size:0.8rem;color:#3182ce">💙 اصطد السمكة في البحر لإلغاء القفل!</div>
+          <div style="margin-top:6px;font-size:0.8rem;color:#3182ce;font-weight:700">💙 اصطد السمكة في البحر لإلغاء القفل!</div>
         `;
       }
       card.appendChild(textContainer);
       container.appendChild(card);
-
-      setTimeout(() => {
-        const domEl = document.getElementById(`fishdex-canvas-${idx}`);
-        if (!domEl) return;
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, domEl.clientWidth / domEl.clientHeight, 0.1, 10);
-        camera.position.set(0, 0, 4);
-
-        const light = new THREE.DirectionalLight(0xffffff, 2.5);
-        light.position.set(2, 4, 5);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(domEl.clientWidth, domEl.clientHeight);
-        domEl.appendChild(renderer.domElement);
-
-        if (isUnlocked) {
-          const fishMesh = create3DFishMesh(f);
-          scene.add(fishMesh);
-          this.fishdexRenderers.push({ renderer, scene, camera, mesh: fishMesh });
-        } else {
-          // Locked mystery blue silhouette
-          const lockedFishData = { ...f, color: 0x00d2ff, accentColor: 0x005580 };
-          const mysteryMesh = create3DFishMesh(lockedFishData);
-          mysteryMesh.traverse(child => {
-            if (child.isMesh) {
-              child.material = new THREE.MeshBasicMaterial({ color: 0x00d2ff, wireframe: true });
-            }
-          });
-          scene.add(mysteryMesh);
-          this.fishdexRenderers.push({ renderer, scene, camera, mesh: mysteryMesh });
-        }
-      }, 50);
     });
   }
 
