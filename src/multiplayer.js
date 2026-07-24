@@ -335,6 +335,21 @@ export class RealtimeMultiplayerManager {
         pData.targetPos.set(data.position.x, 3.4, data.position.z);
         pData.targetRotY = data.rotationY + Math.PI;
 
+        // Dynamic Outfit & Headwear Rebuild for Remote Players
+        const outfitKey = JSON.stringify(data.outfit || {});
+        if (pData.currentOutfitKey !== outfitKey) {
+            this.game.scene.remove(pData.mesh);
+            const avatarMesh = this.createDetailedHumanAvatar(data.name, data.outfit);
+            pData.rodMesh = this.createCustom3DRodModel(data.rodStyle);
+            avatarMesh.add(pData.rodMesh);
+            avatarMesh.position.copy(pData.targetPos);
+            avatarMesh.rotation.y = pData.targetRotY;
+            this.game.scene.add(avatarMesh);
+            pData.mesh = avatarMesh;
+            pData.currentOutfitKey = outfitKey;
+            pData.heldFishId = null; // Force re-attaching fish if holding one
+        }
+
         // Update Rod Skin Model
         if (pData.currentRodStyle !== data.rodStyle) {
             pData.mesh.remove(pData.rodMesh);

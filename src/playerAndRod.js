@@ -508,11 +508,15 @@ export class PlayerAndRodManager {
   }
 
   buildPlayerAvatarMesh(thobeColorHex = 0xffffff, headwearType = 'ghutra', outfitStyle = 'thobe') {
-    if (this.playerAvatarMesh) this.scene.remove(this.playerAvatarMesh);
+    if (this.playerAvatarMesh) {
+      this.scene.remove(this.playerAvatarMesh);
+      this.playerAvatarMesh = null;
+    }
 
+    this.currentAvatarOutfit = { thobeColorHex, headwearType, outfitStyle };
     this.playerAvatarMesh = new THREE.Group();
 
-    // Body Outfit (Sleek body without raised T-pose arms!)
+    // Body Outfit
     const bodyMat = new THREE.MeshStandardMaterial({ color: thobeColorHex, roughness: 0.4 });
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.28, 1.8, 16), bodyMat);
     body.position.y = 0.9;
@@ -539,19 +543,16 @@ export class PlayerAndRodManager {
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
 
-    // Left Eye & Pupil
     const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), eyeMat);
     eyeL.position.set(-0.09, 2.05, 0.25);
     const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), pupilMat);
     pupilL.position.set(-0.09, 2.05, 0.29);
 
-    // Right Eye & Pupil
     const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), eyeMat);
     eyeR.position.set(0.09, 2.05, 0.25);
     const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), pupilMat);
     pupilR.position.set(0.09, 2.05, 0.29);
 
-    // Eyebrows
     const browMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const browL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.015, 0.02), browMat);
     browL.position.set(-0.09, 2.12, 0.27);
@@ -560,18 +561,15 @@ export class PlayerAndRodManager {
     browR.position.set(0.09, 2.12, 0.27);
     browR.rotation.z = -0.05;
 
-    // Nose
     const noseMat = new THREE.MeshStandardMaterial({ color: 0xc8a27a });
     const nose = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.09, 8), noseMat);
     nose.rotation.x = -Math.PI / 6;
     nose.position.set(0, 2.0, 0.28);
 
-    // Mouth
     const mouthMat = new THREE.MeshBasicMaterial({ color: 0x7f1d1d });
     const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.03), mouthMat);
     mouth.position.set(0, 1.91, 0.26);
 
-    // Bahraini Mustache / Beard
     const stacheMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const stache = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.035), stacheMat);
     stache.position.set(0, 1.95, 0.27);
@@ -618,8 +616,20 @@ export class PlayerAndRodManager {
       headwearGroup.add(hairCap);
     }
 
-    this.playerAvatarMesh.add(body, head, faceGroup, headwearGroup);
-    this.playerAvatarMesh.visible = false;
+    // 3D Fishing Rod attached to Avatar's Right Hand for 3rd Person View!
+    const avatarRodGroup = new THREE.Group();
+    avatarRodGroup.name = 'avatar-rod';
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.03, 3.2), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.8 }));
+    shaft.position.set(0, 1.6, 0);
+    const reel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.08), new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9 }));
+    reel.rotation.x = Math.PI / 2;
+    reel.position.set(0, 0.35, -0.05);
+    avatarRodGroup.add(shaft, reel);
+    avatarRodGroup.position.set(0.35, 1.0, 0.3);
+    avatarRodGroup.rotation.x = Math.PI / 3.5;
+
+    this.playerAvatarMesh.add(body, head, faceGroup, headwearGroup, avatarRodGroup);
+    this.playerAvatarMesh.visible = (this.cameraMode === '3RD');
     this.scene.add(this.playerAvatarMesh);
   }
 
