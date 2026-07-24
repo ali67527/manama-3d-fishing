@@ -9,8 +9,9 @@ function createWindow() {
         autoHideMenuBar: true,
         title: "صيد المنامة 3D - 3rna studio",
         webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true
+            nodeIntegration: true,
+            contextIsolation: false,
+            webSecurity: false
         }
     });
 

@@ -762,12 +762,19 @@ class GameController {
     } catch (e) {}
   }
 
+  triggerConfetti(opts) {
+    try {
+      if (typeof confetti === 'function') confetti(opts);
+      else if (window.confetti) window.confetti(opts);
+    } catch (e) {}
+  }
+
   catchVictory() {
     this.gameState = 'CATCH_MODAL';
     if (sounds.playVictorySound) sounds.playVictorySound();
     document.getElementById('fishing-hud').classList.add('hidden');
     this.player.unlockPointer();
-    confetti({ particleCount: 120, spread: 85, origin: { y: 0.6 } });
+    this.triggerConfetti({ particleCount: 120, spread: 85, origin: { y: 0.6 } });
 
     document.getElementById('catch-title').innerText = `اصطدت ${this.currentFish.nameAr}!`;
     document.getElementById('catch-name-ar').innerText = this.currentFish.nameAr;
@@ -964,7 +971,7 @@ class GameController {
       this.catchesCount += count;
       this.updateHUD();
       if (sounds.playSellSound) sounds.playSellSound();
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      this.triggerConfetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
       this.toast(`🎉 بعت ${count} أسماك لـ العم بويعقوب وربحت ${earned} دينار!`);
     } else {
       this.toast('⚠️ لم تحدد أي سمكة لبيعها!');
