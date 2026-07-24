@@ -155,18 +155,23 @@ class GameController {
   handleE() {
     const pos = this.player.camera.position;
 
-    // SELLING IS ONLY ALLOWED AT UNCLE ABU YACOUB AT THE PIER!
+    // SELLING IS ALLOWED AT UNCLE ABU YACOUB AT THE PIER!
     if (this.env.pierVendorMesh) {
       const d = pos.distanceTo(this.env.pierVendorMesh.position);
-      if (d < 6) { this.sellFish('عمي بويعقوب'); return; }
+      if (d < 12) { this.sellFish('عمي بويعقوب'); return; }
     }
+
+    // COOLER FISH STORAGE
     if (this.env.coolerMesh && !this.isCarryingCooler) {
       const d = pos.distanceTo(this.env.coolerMesh.position);
-      if (d < 5) { this.storeFishInCooler(); return; }
+      if (d < 10) { this.storeFishInCooler(); return; }
     }
+
+    // FALLBACK IF CARRIED OR NEARBY
+    this.openVendorSellModal();
   }
 
-  // COOLER RELOCATION VIA [Y] KEY
+  // COOLER RELOCATION VIA [Y] KEY / TOUCH BUTTON
   handleY() {
     if (!this.env.coolerMesh) return;
     const pos = this.player.camera.position;
@@ -174,17 +179,17 @@ class GameController {
     if (!this.isCarryingCooler) {
       // Pick up cooler if nearby
       const d = pos.distanceTo(this.env.coolerMesh.position);
-      if (d < 5) {
+      if (d < 10) {
         this.isCarryingCooler = true;
         this.env.coolerMesh.visible = false;
         if (sounds.playStoreSound) sounds.playStoreSound();
-        this.toast('🧊 حملت الثلاجة [Y]! تحرك لمكان الصيد واضغط Y لوضعها!');
+        this.toast('🧊 حملت الثلاجة! تحرك لمكان الصيد ثم اضغط الأيقونة لوضعها!');
       } else {
-        this.toast('⚠️ اقترب من الثلاجة أولاً لنقلها [Y]!');
+        this.toast('⚠️ اقترب من الثلاجة أولاً لنقلها!');
       }
     } else {
-      // Place down cooler (CONSTRAINT: ONLY INSIDE FISHING PIER AREA z: 0 to 62, x: -10 to 10)
-      if (pos.z >= 0 && pos.z <= 62 && pos.x >= -10 && pos.x <= 10) {
+      // Place down cooler (CONSTRAINT: ONLY INSIDE FISHING PIER AREA z: -10 to 70, x: -15 to 15)
+      if (pos.z >= -10 && pos.z <= 70 && pos.x >= -15 && pos.x <= 15) {
         this.isCarryingCooler = false;
         this.env.coolerMesh.position.set(pos.x, 3.4, pos.z + 1.2);
         this.env.coolerMesh.visible = true;
@@ -314,6 +319,33 @@ class GameController {
       btnConfirmVendorSell.addEventListener('click', () => {
         this.confirmVendorSell();
       });
+    }
+
+    const btnMobileInteract = document.getElementById('mobile-btn-interact');
+    if (btnMobileInteract) {
+      btnMobileInteract.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.handleE();
+      });
+      btnMobileInteract.addEventListener('click', () => this.handleE());
+    }
+
+    const btnMobileCooler = document.getElementById('mobile-btn-cooler');
+    if (btnMobileCooler) {
+      btnMobileCooler.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.handleY();
+      });
+      btnMobileCooler.addEventListener('click', () => this.handleY());
+    }
+
+    const promptEl = document.getElementById('interaction-prompt');
+    if (promptEl) {
+      promptEl.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.handleE();
+      });
+      promptEl.addEventListener('click', () => this.handleE());
     }
 
     document.getElementById('btn-sound').addEventListener('click', () => {
