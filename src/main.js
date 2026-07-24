@@ -14,10 +14,11 @@ class GameController {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1500);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+    this.renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: 'high-performance' });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 2));
+    this.renderer.shadowMap.enabled = !isMobile;
     this.container.appendChild(this.renderer.domElement);
 
     this.env = new EnvironmentManager(this.scene);

@@ -196,12 +196,18 @@ export class PlayerAndRodManager {
   }
 
   requestLock(el) {
-    el.requestPointerLock();
+    try {
+      if (el && el.requestPointerLock && !('ontouchstart' in window)) {
+        el.requestPointerLock();
+      }
+    } catch (e) {}
     this.isPointerLocked = true;
   }
 
   unlockPointer() {
-    if (document.pointerLockElement) document.exitPointerLock();
+    try {
+      if (document.pointerLockElement) document.exitPointerLock();
+    } catch (e) {}
     this.isPointerLocked = false;
   }
 
