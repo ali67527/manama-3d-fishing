@@ -112,6 +112,22 @@ class GameController {
 
   setupKeys() {
     window.addEventListener('keydown', (e) => {
+      // CTRL key mouse lock toggle!
+      if (e.code === 'ControlLeft' || e.code === 'ControlRight' || e.key === 'Control') {
+        if (this.player.isPointerLocked) {
+          this.player.unlockPointer();
+          this.toast('🔓 تم تحرير الماوس [CTRL]');
+        } else {
+          this.player.requestLock(this.container);
+          this.toast('🔒 تم قفل الكاميرا والماوس [CTRL]');
+        }
+      }
+
+      // Escape key closes any open modal!
+      if (e.code === 'Escape') {
+        this.closeAllModals();
+      }
+
       if (['Digit1','Digit2','Digit3','Digit4','Digit5'].includes(e.code)) {
         const n = parseInt(e.code.replace('Digit', ''));
         this.setHotbar(n);
@@ -144,6 +160,34 @@ class GameController {
         if (sounds.playClick) sounds.playClick();
       }
     });
+
+    // Close modal when clicking backdrop outside modal card
+    document.querySelectorAll('.fullscreen-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay && !overlay.id.includes('start-overlay')) {
+          this.closeAllModals();
+        }
+      });
+    });
+  }
+
+  closeAllModals() {
+    const modalIds = [
+      'shop-modal', 'fishdex-modal', 'settings-modal',
+      'vendor-sell-modal', 'server-browser-modal',
+      'trade-modal', 'challenge-modal'
+    ];
+    let closedAny = false;
+    modalIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.classList.contains('hidden')) {
+        el.classList.add('hidden');
+        closedAny = true;
+      }
+    });
+    if (closedAny && this.gameState === 'ROAMING') {
+      this.player.requestLock(this.container);
+    }
   }
 
   setHotbar(n) {
@@ -682,11 +726,25 @@ class GameController {
   }
 
   applySettings(btnScalePct, quality) {
-    // 1. Mobile button scale
-    const scaleVal = (parseFloat(btnScalePct) || 100) / 100;
+    const pct = parseFloat(btnScalePct) || 100;
+    const scaleVal = pct / 100;
+
+    // Apply scale variable to root and mobile controls element directly
     document.documentElement.style.setProperty('--mobile-scale', scaleVal.toString());
 
-    // 2. Graphics quality
+    const mc = document.getElementById('mobile-controls');
+    if (mc) {
+      mc.style.transform = `scale(${scaleVal})`;
+      mc.style.transformOrigin = 'bottom center';
+    }
+
+    const jz = document.getElementById('joystick-zone');
+    if (jz) {
+      jz.style.width = `${Math.round(100 * scaleVal)}px`;
+      jz.style.height = `${Math.round(100 * scaleVal)}px`;
+    }
+
+    // Graphics quality
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
     if (quality === 'low') {
       this.renderer.setPixelRatio(1.0);
@@ -700,7 +758,7 @@ class GameController {
     }
 
     try {
-      localStorage.setItem('manama_settings', JSON.stringify({ btnScalePct, quality }));
+      localStorage.setItem('manama_settings', JSON.stringify({ btnScalePct: pct.toString(), quality }));
     } catch (e) {}
   }
 

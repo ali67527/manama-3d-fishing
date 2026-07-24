@@ -488,26 +488,74 @@ html, body {
   font-size: 0.75rem;
 }
 
-/* Fullscreen Overlays */
-.fullscreen-overlay {
+/* Bottom Left HUD Guide Panel */
+.hud-guide-panel {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(3, 13, 26, 0.75);
-  backdrop-filter: blur(12px);
-  z-index: 100;
+  bottom: 25px;
+  left: 20px;
+  z-index: 90;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  border-radius: 14px;
+  background: rgba(10, 25, 47, 0.82);
+  border: 1.5px solid rgba(0, 210, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+  max-width: 260px;
+}
+
+.guide-row {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.guide-badge {
+  background: linear-gradient(135deg, #00d2ff, #0083b0);
+  color: #fff;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+}
+
+.guide-txt {
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .hud-guide-panel {
+    display: none;
+  }
+}
+
+/* Glassmorphism & Premium Modal Overlays */
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(2, 8, 20, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
   justify-content: center;
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: auto;
 }
 
 .fullscreen-overlay.hidden {
-  opacity: 0;
+  display: none !important;
   pointer-events: none;
 }
 
