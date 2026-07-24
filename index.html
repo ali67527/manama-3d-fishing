@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لعبة صيد السمك 3D - كورنيش المنامة أونلاين | Manama 3D Fishing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <div id="ui-layer">
+    <header class="hud-header glass-card">
+      <div class="header-left">
+        <div class="logo-badge">
+          <span class="flag-icon">🇧🇭</span>
+          <span class="title">صيد المنامة 3D</span>
+        </div>
+        <div class="environment-status">
+          <span id="time-display">🌅 غروب المنامة</span>
+          <span id="multiplayer-status" class="online-badge">🌐 السيرفر أونلاين</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="stat-pill"><span>🪙</span><span class="stat-val" id="coins-count">200</span><span class="stat-lbl">دينار</span></div>
+        <div class="stat-pill"><span>🧊</span><span class="stat-val" id="cooler-count">0/4</span><span class="stat-lbl">ثلاجة</span></div>
+        <div class="stat-pill"><span>🐟</span><span class="stat-val" id="catches-count">0</span><span class="stat-lbl">صيد</span></div>
+        <button id="btn-sound" class="glass-btn">🔊</button>
+        <button id="btn-servers" class="glass-btn btn-secondary">🌐 السيرفرات</button>
+        <button id="btn-trade" class="glass-btn btn-secondary">🤝 مبادلة [K]</button>
+        <button id="btn-challenge" class="glass-btn btn-primary">⚔️ تحدي 1v1 [C]</button>
+        <button id="btn-shop" class="glass-btn btn-primary">🛒 المتجر [P]</button>
+        <button id="btn-fishdex" class="glass-btn">📖 الموسوعة [M]</button>
+      </div>
+    </header>
+
+    <!-- Crosshair -->
+    <div id="crosshair"><div class="dot"></div><div class="ring"></div></div>
+
+    <!-- Toast Notification -->
+    <div id="status-toast" class="toast hidden"></div>
+
+    <!-- Interaction Prompt -->
+    <div id="interaction-prompt" class="interaction-prompt hidden">
+      <span class="prompt-key" id="prompt-key">E</span>
+      <span class="prompt-text" id="prompt-text">تفاعل</span>
+    </div>
+
+    <!-- Hotbar [1, 2, 3, 4, 5] -->
+    <div id="hotbar-container" class="hotbar-container glass-card">
+      <div class="hotbar-slot active" data-slot="1"><span class="slot-num">1</span><span class="slot-icon" id="slot-1-icon">🎣</span><span class="slot-label" id="slot-1-label">السنارة</span></div>
+      <div class="hotbar-slot" data-slot="2"><span class="slot-num">2</span><span class="slot-icon" id="slot-2-icon">✋</span><span class="slot-label" id="slot-2-label">فارغ</span></div>
+      <div class="hotbar-slot" data-slot="3"><span class="slot-num">3</span><span class="slot-icon" id="slot-3-icon">✋</span><span class="slot-label" id="slot-3-label">فارغ</span></div>
+      <div class="hotbar-slot" data-slot="4"><span class="slot-num">4</span><span class="slot-icon" id="slot-4-icon">✋</span><span class="slot-label" id="slot-4-label">فارغ</span></div>
+      <div class="hotbar-slot" data-slot="5"><span class="slot-num">5</span><span class="slot-icon" id="slot-5-icon">✋</span><span class="slot-label" id="slot-5-label">فارغ</span></div>
+    </div>
+
+    <!-- Fishing Meter HUD (FIXED BOTH METERS: CATCH PROGRESS % AND LINE HEALTH/TENSION %) -->
+    <div id="fishing-hud" class="fishing-hud hidden glass-card">
+      <div class="hud-row">
+        <span class="fish-tag" id="fish-behavior-tag">🎣 السمكة تقاوم!</span>
+        <span id="fish-distance">📏 المسافة: 25 م</span>
+      </div>
+
+      <!-- Meter 1: Fish Catch Progress % -->
+      <div class="meter-box">
+        <div class="meter-label"><span>تقدم سحب السمكة (Catch Progress)</span><span id="catch-progress-val">0%</span></div>
+        <div class="meter-bar"><div id="catch-progress-fill" class="meter-fill blue-fill" style="width:0%"></div></div>
+      </div>
+
+      <!-- Meter 2: Line Health / Tension % -->
+      <div class="meter-box">
+        <div class="meter-label"><span>تحمل وقوة الخيط (Line Health)</span><span id="line-health-val">100%</span></div>
+        <div class="meter-bar"><div id="line-health-fill" class="meter-fill health-green-fill" style="width:100%"></div></div>
+      </div>
+
+      <div class="meter-guidance">
+        <span>اضغط مطولاً على Left Click لسحب السمكة عند التوقف</span>
+        <small class="warning">⚠️ احذر! إذا قاومت السمكة وشددتها ينقطع الخيط ويقل التحمل!</small>
+      </div>
+    </div>
+
+    <!-- 1v1 Challenge Timer HUD -->
+    <div id="challenge-hud" class="challenge-hud hidden glass-card">
+      <div class="challenge-title">⚔️ تحدي صيد الأسماك 1v1</div>
+      <div class="challenge-timer" id="challenge-time-left">60 ثانية</div>
+      <div class="challenge-scores">
+        <div class="player-score">أنت: <span id="my-challenge-score">0</span> سمكة</div>
+        <div class="vs-badge">VS</div>
+        <div class="opponent-score"><span id="challenge-opp-name">الخصم</span>: <span id="opp-challenge-score">0</span> سمكة</div>
+      </div>
+    </div>
+
+    <!-- Start Screen with Name Input -->
+    <div id="start-overlay" class="fullscreen-overlay active">
+      <div class="start-modal glass-card-lg">
+        <div class="start-header">
+          <span class="bahrain-badge">🇧🇭 مملكة البحرين - كورنيش المنامة 3D</span>
+          <h1>لعبة صيد الأسماك أونلاين</h1>
+          <p>أدخل اسمك واختر سيرفر للعب مع أصدقائك في خليج البحرين!</p>
+        </div>
+
+        <div style="margin: 20px 0;">
+          <label style="font-weight: 800; display: block; margin-bottom: 8px;">👤 أدخل اسمك في اللعبة (Player Name):</label>
+          <input type="text" id="player-name-input" class="input-name" placeholder="أدخل اسمك هنا..." value="صياد_المنامة" />
+        </div>
+
+        <div class="mode-select-grid">
+          <button id="btn-mode-offline" class="mode-card">
+            <span class="mode-icon">🎮</span>
+            <h3>لعب فردي (Offline)</h3>
+            <p>استمتع بالصيد واستكشاف البحر وتطوير عتادك بمفردك</p>
+          </button>
+          <button id="btn-mode-online" class="mode-card highlight">
+            <span class="mode-icon">🌐</span>
+            <h3>قائمة السيرفرات أونلاين (Server List)</h3>
+            <p>اختر سيرفر أو أنشئ سيرفرك الخاص ليلعب أصدقاؤك معك!</p>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Browser Modal (قائمة وتصفح السيرفرات) -->
+    <div id="server-browser-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>🌐 قائمة السيرفرات الأونلاين (Server Browser)</h3>
+          <button class="btn-close-modal" id="btn-close-servers">✕</button>
+        </div>
+
+        <!-- Create Server Section -->
+        <div style="background:rgba(0,210,255,0.1);padding:15px;border-radius:12px;margin-bottom:15px;display:flex;gap:12px;align-items:center">
+          <input type="text" id="new-server-name-input" class="input-name" placeholder="اسم السيرفر الجديد..." style="flex:1" />
+          <button id="btn-create-server-confirm" class="btn-primary">➕ إنشاء سيرفر جديد</button>
+        </div>
+
+        <h4>السيرفرات المتاحة حالياً:</h4>
+        <div id="servers-list-container" class="items-list" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- Catch Result Modal -->
+    <div id="catch-modal" class="fullscreen-overlay hidden">
+      <div class="catch-card glass-card-lg">
+        <div class="catch-ribbon" id="catch-rarity-ribbon">أسطوري!</div>
+        <h2 id="catch-title">اصطدت سمكة هامور!</h2>
+        <div class="catch-content">
+          <div class="fish-preview-box">
+            <div id="fish-3d-canvas-container"></div>
+            <div class="badge-weight" id="catch-weight">4.85 كجم</div>
+          </div>
+          <div class="fish-details-panel">
+            <div class="detail-row"><span class="label">الاسم العربي:</span><span class="val" id="catch-name-ar">هامور بحريني</span></div>
+            <div class="detail-row"><span class="label">English Name:</span><span class="val" id="catch-name-en">Hamour (Grouper)</span></div>
+            <div class="detail-row"><span class="label">الندرة:</span><span class="val" id="catch-rarity-val">أسطوري</span></div>
+            <div class="detail-row"><span class="label">القيمة المقدرة:</span><span class="val highlight" id="catch-price">45 دينار</span></div>
+            <p class="fish-description" id="catch-desc">من أشهر وأفخر الأسماك في مياه البحرين الخليجية.</p>
+          </div>
+        </div>
+        <div class="catch-actions">
+          <button id="btn-store-hand" class="btn-primary">🎒 احفظ السمكة في الانفنتوري</button>
+          <button id="btn-close-catch" class="btn-secondary">🌊 مواصلة الصيد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trade Modal with Real Player Select -->
+    <div id="trade-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>🤝 سوق المبادلة بين الصيادين (Trade)</h3>
+          <button class="btn-close-modal" id="btn-close-trade">✕</button>
+        </div>
+
+        <div style="margin: 12px 0;">
+          <label style="font-weight:800">👤 اختر الصياد المستهدف للمبادلة:</label>
+          <select id="trade-player-select" class="input-select"></select>
+        </div>
+
+        <div class="trade-grid">
+          <div class="trade-side">
+            <h4>أسماكك المعروضة</h4>
+            <div id="my-trade-items" class="items-list"></div>
+          </div>
+          <div class="trade-side">
+            <h4>العرض المقابل من اللاعب</h4>
+            <div id="partner-trade-items" class="items-list"></div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:15px">
+          <button id="btn-confirm-trade" class="btn-primary">✅ إرسال وإتمام المبادلة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1v1 Challenge Modal with Player Select -->
+    <div id="challenge-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>⚔️ إرسال تحدي صيد 1v1 للاعب آخر</h3>
+          <button class="btn-close-modal" id="btn-close-challenge">✕</button>
+        </div>
+
+        <div style="margin: 18px 0;">
+          <label style="font-weight:800">👤 اختر الصياد الذي تريد تحدّيه في مسابقة 60 ثانية:</label>
+          <select id="challenge-player-select" class="input-select"></select>
+        </div>
+
+        <div style="text-align:center;margin-top:20px">
+          <button id="btn-send-challenge-confirm" class="btn-primary">⚔️ إرسال التحدي فوراً!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shop-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>🛒 متجر معدات صيد المنامة</h3>
+          <button class="btn-close-modal" id="btn-close-shop">✕</button>
+        </div>
+        <div class="shop-grid">
+          <div class="shop-category">
+            <h4>🎣 سنارات صيد احترافية</h4>
+            <div class="items-list" id="rods-shop-list"></div>
+          </div>
+          <div class="shop-category">
+            <h4>⚡ ترقية سرعة البكرة</h4>
+            <div class="items-list" id="rod-upgrades-list"></div>
+          </div>
+          <div class="shop-category">
+            <h4>🧊 تطوير ثلاجة حفظ الأسماك</h4>
+            <div class="items-list" id="cooler-shop-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fishdex Modal -->
+    <div id="fishdex-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>📖 موسوعة أسماك خليج البحرين 3D</h3>
+          <button class="btn-close-modal" id="btn-close-fishdex">✕</button>
+        </div>
+        <div class="fishdex-grid" id="fishdex-grid-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

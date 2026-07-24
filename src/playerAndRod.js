@@ -1,0 +1,350 @@
+import * as THREE from 'three';
+import { sounds } from './audio.js';
+import { create3DFishMesh } from './fishData.js';
+
+export class PlayerAndRodManager {
+  constructor(camera, scene) {
+    this.camera = camera;
+    this.scene = scene;
+
+    this.scene.add(this.camera);
+
+    this.moveForward = false;
+    this.moveBackward = false;
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.isSprinting = false;
+
+    this.velocityY = 0;
+    this.isGrounded = true;
+    this.gravity = -20;
+    this.jumpForce = 7;
+
+    this.pitch = 0;
+    this.yaw = 0;
+    this.isPointerLocked = false;
+
+    this.activeSlot = 1; // 1=Rod, 2-5=Fish slots
+    this.heldFishData = [null, null, null, null];
+    this.equippedRodStyle = 'basic';
+
+    this.camera.position.set(0, 5.0, 35);
+
+    this.rodGroup = null;
+    this.heldFishMesh = null;
+    this.rodTipMarker = null;
+
+    this.bobberMesh = null;
+    this.lineMesh = null;
+    this.isCasted = false;
+    this.bobberPos = new THREE.Vector3();
+    this.castAnim = null;
+
+    this.setupControls();
+    this.buildRod();
+    this.buildBobberAndLine();
+    this.setActiveSlot(1);
+  }
+
+  setupControls() {
+    window.addEventListener('keydown', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp':    this.moveForward = true; break;
+        case 'KeyS': case 'ArrowDown':  this.moveBackward = true; break;
+        case 'KeyA': case 'ArrowLeft':  this.moveLeft = true; break;
+        case 'KeyD': case 'ArrowRight': this.moveRight = true; break;
+        case 'ShiftLeft': case 'ShiftRight': this.isSprinting = true; break;
+        case 'Space':
+          if (this.isGrounded) {
+            this.velocityY = this.jumpForce;
+            this.isGrounded = false;
+            if (sounds.playJumpSound) sounds.playJumpSound();
+          }
+          break;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp':    this.moveForward = false; break;
+        case 'KeyS': case 'ArrowDown':  this.moveBackward = false; break;
+        case 'KeyA': case 'ArrowLeft':  this.moveLeft = false; break;
+        case 'KeyD': case 'ArrowRight': this.moveRight = false; break;
+        case 'ShiftLeft': case 'ShiftRight': this.isSprinting = false; break;
+      }
+    });
+
+    window.addEventListener('wheel', (e) => {
+      if (!this.isPointerLocked) return;
+      if (e.deltaY > 0) {
+        let next = this.activeSlot + 1;
+        if (next > 5) next = 1;
+        if (window.gameController) window.gameController.setHotbar(next);
+      } else if (e.deltaY < 0) {
+        let prev = this.activeSlot - 1;
+        if (prev < 1) prev = 5;
+        if (window.gameController) window.gameController.setHotbar(prev);
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!this.isPointerLocked) return;
+      this.yaw -= e.movementX * 0.002;
+      this.pitch -= e.movementY * 0.002;
+      this.pitch = Math.max(-1.2, Math.min(1.2, this.pitch));
+      this.camera.quaternion.setFromEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
+    });
+  }
+
+  requestLock(el) {
+    el.requestPointerLock();
+    this.isPointerLocked = true;
+  }
+
+  unlockPointer() {
+    if (document.pointerLockElement) document.exitPointerLock();
+    this.isPointerLocked = false;
+  }
+
+  setActiveSlot(num) {
+    this.activeSlot = num;
+
+    if (this.rodGroup) this.rodGroup.visible = false;
+    if (this.heldFishMesh) {
+      this.camera.remove(this.heldFishMesh);
+      this.heldFishMesh = null;
+    }
+
+    if (num === 1) {
+      if (this.rodGroup) this.rodGroup.visible = true;
+    } else {
+      const fishData = this.heldFishData[num - 2];
+      if (fishData) {
+        this.heldFishMesh = create3DFishMesh(fishData);
+        this.heldFishMesh.scale.set(0.3, 0.3, 0.3);
+        this.heldFishMesh.position.set(0.3, -0.35, -0.95);
+        this.heldFishMesh.rotation.set(0, Math.PI / 4, Math.PI / 8);
+        this.camera.add(this.heldFishMesh);
+      }
+    }
+  }
+
+  setRodStyle(style) {
+    this.equippedRodStyle = style;
+    this.buildRod();
+  }
+
+  buildRod() {
+    if (this.rodGroup) this.camera.remove(this.rodGroup);
+
+    this.rodGroup = new THREE.Group();
+
+    let mainColor = 0x1e272e; // Dark Carbon Fiber
+    let accentColor = 0x00d2ff;
+
+    if (this.equippedRodStyle === 'neon') {
+      mainColor = 0x00d2ff;
+      accentColor = 0x9b59b6;
+    } else if (this.equippedRodStyle === 'gold') {
+      mainColor = 0xffd700;
+      accentColor = 0xff8c00;
+    } else if (this.equippedRodStyle === 'dragon') {
+      mainColor = 0xd63031;
+      accentColor = 0xfdc830;
+    }
+
+    // Ergonomic EVA Foam Handle
+    const handleGeo = new THREE.CylinderGeometry(0.035, 0.04, 0.45, 16);
+    const handleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+    const handle = new THREE.Mesh(handleGeo, handleMat);
+    handle.position.set(0, 0, 0);
+    this.rodGroup.add(handle);
+
+    // Chrome Metallic Reel Seat
+    const metalMat = new THREE.MeshStandardMaterial({ color: accentColor, metalness: 0.9, roughness: 0.1 });
+    const reelSeat = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.14, 16), metalMat);
+    reelSeat.position.set(0, 0.16, 0);
+    this.rodGroup.add(reelSeat);
+
+    // Spinning Reel with Spool and Crank Handle
+    const reelGroup = new THREE.Group();
+    reelGroup.position.set(0, 0.16, -0.06);
+    const spool = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.07, 16), metalMat);
+    spool.rotation.x = Math.PI / 2;
+    const handleArm = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.08, 0.015), metalMat);
+    handleArm.position.set(0.04, 0, 0);
+    const handleKnob = new THREE.Mesh(new THREE.SphereGeometry(0.022), handleMat);
+    handleKnob.position.set(0.04, 0.04, 0);
+    reelGroup.add(spool, handleArm, handleKnob);
+    this.rodGroup.add(reelGroup);
+
+    // Tapered Carbon Fiber Shaft
+    const shaftGeo = new THREE.CylinderGeometry(0.007, 0.032, 1.9, 16);
+    const shaftMat = new THREE.MeshStandardMaterial({
+      color: mainColor,
+      roughness: 0.2,
+      metalness: 0.4
+    });
+    const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+    shaft.position.set(0, 1.15, 0);
+    this.rodGroup.add(shaft);
+
+    // Stainless Steel Line Guide Rings along Shaft
+    for (let i = 1; i <= 5; i++) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.024 - i * 0.003, 0.004, 8, 16), metalMat);
+      ring.position.set(0, 0.35 + i * 0.32, -0.02);
+      this.rodGroup.add(ring);
+    }
+
+    this.rodTipMarker = new THREE.Object3D();
+    this.rodTipMarker.position.set(0, 2.1, 0);
+    this.rodGroup.add(this.rodTipMarker);
+
+    this.rodGroup.position.set(0.32, -0.38, -0.55);
+    this.rodGroup.rotation.set(-1.1, 0.2, -0.15);
+
+    this.camera.add(this.rodGroup);
+  }
+
+  buildBobberAndLine() {
+    const bobberGeo = new THREE.SphereGeometry(0.18, 16, 16);
+    const bobberMat = new THREE.MeshStandardMaterial({ color: 0xff3333, roughness: 0.3 });
+    this.bobberMesh = new THREE.Mesh(bobberGeo, bobberMat);
+    const topCap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.15), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+    topCap.position.y = 0.12;
+    this.bobberMesh.add(topCap);
+    this.bobberMesh.visible = false;
+    this.scene.add(this.bobberMesh);
+
+    const lineGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(30 * 3);
+    lineGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2, transparent: true, opacity: 0.85 });
+    this.lineMesh = new THREE.Line(lineGeo, lineMat);
+    this.lineMesh.frustumCulled = false;
+    this.scene.add(this.lineMesh);
+  }
+
+  castLine(distance = 25) {
+    const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+
+    if (camDir.z < 0.15) return false;
+
+    this.isCasted = true;
+    this.bobberMesh.visible = true;
+
+    const startPos = new THREE.Vector3();
+    this.rodTipMarker.getWorldPosition(startPos);
+
+    const targetPos = new THREE.Vector3().copy(this.camera.position).addScaledVector(camDir, distance);
+    targetPos.y = 0.15;
+
+    this.bobberPos.copy(targetPos);
+
+    this.castAnim = {
+      startPos: startPos.clone(),
+      endPos: targetPos.clone(),
+      progress: 0,
+      duration: 0.7
+    };
+
+    return true;
+  }
+
+  retrieveLine() {
+    this.isCasted = false;
+    this.bobberMesh.visible = false;
+    this.castAnim = null;
+    if (this.lineMesh) this.lineMesh.geometry.setDrawRange(0, 0);
+  }
+
+  getFloorHeight(pos) {
+    if (pos.z > 0 && pos.x >= -11 && pos.x <= 11) return 5.0;
+    if (pos.z <= 0 && pos.x >= -180 && pos.x <= 180) return 5.7;
+    return 5.0;
+  }
+
+  update(delta, tension = 0) {
+    if (!this.isPointerLocked) return;
+
+    const isMoving = this.moveForward || this.moveBackward || this.moveLeft || this.moveRight;
+    if (isMoving && this.isGrounded && sounds.playFootstep) sounds.playFootstep();
+
+    const speed = (this.isSprinting ? 10 : 5.5) * delta;
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    fwd.y = 0; fwd.normalize();
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+    right.y = 0; right.normalize();
+
+    if (this.moveForward) this.camera.position.addScaledVector(fwd, speed);
+    if (this.moveBackward) this.camera.position.addScaledVector(fwd, -speed);
+    if (this.moveLeft) this.camera.position.addScaledVector(right, -speed);
+    if (this.moveRight) this.camera.position.addScaledVector(right, speed);
+
+    this.velocityY += this.gravity * delta;
+    this.camera.position.y += this.velocityY * delta;
+
+    const floorY = this.getFloorHeight(this.camera.position);
+    if (this.camera.position.y <= floorY) {
+      this.camera.position.y = floorY;
+      if (this.velocityY < -2 && sounds.playLandSound) sounds.playLandSound();
+      this.velocityY = 0;
+      this.isGrounded = true;
+    }
+
+    const p = this.camera.position;
+    if (p.z > 0) {
+      p.x = THREE.MathUtils.clamp(p.x, -9.5, 9.5);
+      p.z = THREE.MathUtils.clamp(p.z, 0, 62);
+    } else {
+      p.x = THREE.MathUtils.clamp(p.x, -180, 180);
+      p.z = THREE.MathUtils.clamp(p.z, -21, 0);
+    }
+
+    if (this.rodGroup && this.rodGroup.visible) {
+      this.rodGroup.rotation.x = -1.1 - (tension * 0.003);
+    }
+
+    if (this.castAnim) {
+      this.castAnim.progress += delta / this.castAnim.duration;
+      if (this.castAnim.progress >= 1) {
+        this.castAnim.progress = 1;
+        this.bobberMesh.position.copy(this.castAnim.endPos);
+        this.castAnim = null;
+      } else {
+        const t = this.castAnim.progress;
+        const sp = this.castAnim.startPos;
+        const ep = this.castAnim.endPos;
+        const x = sp.x + (ep.x - sp.x) * t;
+        const z = sp.z + (ep.z - sp.z) * t;
+        const peakHeight = Math.max(sp.y, ep.y) + 6;
+        const y = sp.y + (ep.y - sp.y) * t + peakHeight * 4 * t * (1 - t) - sp.y * 4 * t * (1 - t);
+        this.bobberMesh.position.set(x, Math.max(y, ep.y), z);
+      }
+    }
+
+    if (this.isCasted && !this.castAnim) {
+      this.bobberPos.y = Math.sin(Date.now() * 0.003) * 0.12 + 0.15;
+      this.bobberMesh.position.y = this.bobberPos.y;
+    }
+
+    if (this.isCasted && this.lineMesh && this.rodTipMarker) {
+      const tipPos = new THREE.Vector3();
+      this.rodTipMarker.getWorldPosition(tipPos);
+      const bobPos = this.bobberMesh.position;
+
+      const attr = this.lineMesh.geometry.attributes.position;
+      const segments = 30;
+      for (let i = 0; i < segments; i++) {
+        const t = i / (segments - 1);
+        const x = tipPos.x + (bobPos.x - tipPos.x) * t;
+        const z = tipPos.z + (bobPos.z - tipPos.z) * t;
+        const sag = -Math.sin(t * Math.PI) * 0.5 * (1 - Math.abs(t - 0.5) * 2);
+        const y = tipPos.y + (bobPos.y - tipPos.y) * t + sag;
+        attr.setXYZ(i, x, y, z);
+      }
+      attr.needsUpdate = true;
+      this.lineMesh.geometry.setDrawRange(0, segments);
+    }
+  }
+}
