@@ -595,13 +595,18 @@ export class EnvironmentManager {
 
     createDynamicNPCFishermen() {
         this.spotOptions = [
-            { x: -8.5, z: 25, rotY: -Math.PI / 2 },
-            { x: 8.5, z: 25, rotY: Math.PI / 2 },
-            { x: -8.5, z: 42, rotY: 0 },
-            { x: 8.5, z: 42, rotY: 0 }
+            // Left bots - facing Left to the sea (-X)
+            { x: -9.5, z: 22, rotY: -Math.PI / 2 },
+            { x: -9.5, z: 46, rotY: -Math.PI / 2 },
+            // Right bots - facing Right to the sea (+X)
+            { x: 9.5, z: 22, rotY: Math.PI / 2 },
+            { x: 9.5, z: 46, rotY: Math.PI / 2 },
+            // Front bots - facing Forward to the deep sea (+Z)
+            { x: -4.5, z: 66, rotY: 0 },
+            { x: 4.5, z: 66, rotY: 0 }
         ];
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 3; i++) {
             this.spawnNewFishermanBot(i);
         }
     }

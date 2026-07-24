@@ -28,7 +28,9 @@ export class PlayerAndRodManager {
     this.heldFishData = [null, null, null, null];
     this.equippedRodStyle = 'basic';
 
-    this.camera.position.set(0, 5.0, 35);
+    this.cameraMode = '1ST';
+    this.position = new THREE.Vector3(0, 5.0, 35);
+    this.camera.position.copy(this.position);
 
     this.rodGroup = null;
     this.heldFishMesh = null;
@@ -373,38 +375,70 @@ export class PlayerAndRodManager {
   update(delta, tension = 0) {
     if (!this.isPointerLocked) return;
 
+    // Limit delta to 0.05 max to prevent lag spikes or drop frames
+    const clampedDelta = Math.min(delta, 0.05);
+
     const isMoving = this.moveForward || this.moveBackward || this.moveLeft || this.moveRight;
     if (isMoving && this.isGrounded && sounds.playFootstep) sounds.playFootstep();
 
-    const speed = (this.isSprinting ? 10 : 5.5) * delta;
-    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-    fwd.y = 0; fwd.normalize();
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-    right.y = 0; right.normalize();
+    const speed = (this.isSprinting ? 10 : 5.5) * clampedDelta;
+    
+    // Direction vectors derived from yaw
+    const fwd = new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw)).normalize();
+    const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)).normalize();
 
-    if (this.moveForward) this.camera.position.addScaledVector(fwd, speed);
-    if (this.moveBackward) this.camera.position.addScaledVector(fwd, -speed);
-    if (this.moveLeft) this.camera.position.addScaledVector(right, -speed);
-    if (this.moveRight) this.camera.position.addScaledVector(right, speed);
+    if (!this.position) this.position = this.camera.position.clone();
 
-    this.velocityY += this.gravity * delta;
-    this.camera.position.y += this.velocityY * delta;
+    if (this.moveForward) this.position.addScaledVector(fwd, speed);
+    if (this.moveBackward) this.position.addScaledVector(fwd, -speed);
+    if (this.moveLeft) this.position.addScaledVector(right, -speed);
+    if (this.moveRight) this.position.addScaledVector(right, speed);
 
-    const floorY = this.getFloorHeight(this.camera.position);
-    if (this.camera.position.y <= floorY) {
-      this.camera.position.y = floorY;
+    this.velocityY += this.gravity * clampedDelta;
+    this.position.y += this.velocityY * clampedDelta;
+
+    const floorY = this.getFloorHeight(this.position);
+    if (this.position.y <= floorY) {
+      this.position.y = floorY;
       if (this.velocityY < -2 && sounds.playLandSound) sounds.playLandSound();
       this.velocityY = 0;
       this.isGrounded = true;
     }
 
-    const p = this.camera.position;
+    const p = this.position;
     if (p.z > 0) {
       p.x = THREE.MathUtils.clamp(p.x, -9.5, 9.5);
-      p.z = THREE.MathUtils.clamp(p.z, 0, 62);
+      p.z = THREE.MathUtils.clamp(p.z, 0, 64);
     } else {
       p.x = THREE.MathUtils.clamp(p.x, -180, 180);
       p.z = THREE.MathUtils.clamp(p.z, -21, 0);
+    }
+
+    // Camera Mode positioning
+    if (this.cameraMode === '3RD') {
+      if (!this.playerAvatarMesh) this.buildPlayerAvatarMesh();
+      if (this.playerAvatarMesh) {
+        this.playerAvatarMesh.position.set(p.x, p.y - 1.6, p.z);
+        this.playerAvatarMesh.rotation.y = this.yaw + Math.PI;
+        this.playerAvatarMesh.visible = true;
+      }
+      if (this.rodGroup) this.rodGroup.visible = false;
+
+      // 3rd Person Follow Camera offset
+      const dist = 3.8;
+      const camX = p.x + Math.sin(this.yaw) * dist;
+      const camZ = p.z + Math.cos(this.yaw) * dist;
+      const camY = p.y + 1.4 + Math.sin(this.pitch) * 1.5;
+
+      this.camera.position.set(camX, Math.max(camY, floorY + 0.5), camZ);
+      this.camera.lookAt(p.x, p.y + 0.3, p.z);
+    } else {
+      // 1st Person Camera
+      if (this.playerAvatarMesh) this.playerAvatarMesh.visible = false;
+      if (this.rodGroup) this.rodGroup.visible = (this.activeSlot === 1);
+
+      this.camera.position.copy(p);
+      this.camera.quaternion.setFromEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
     }
 
     if (this.rodGroup && this.rodGroup.visible) {
@@ -412,7 +446,7 @@ export class PlayerAndRodManager {
     }
 
     if (this.castAnim) {
-      this.castAnim.progress += delta / this.castAnim.duration;
+      this.castAnim.progress += clampedDelta / this.castAnim.duration;
       if (this.castAnim.progress >= 1) {
         this.castAnim.progress = 1;
         this.bobberMesh.position.copy(this.castAnim.endPos);
@@ -451,16 +485,6 @@ export class PlayerAndRodManager {
       }
       attr.needsUpdate = true;
       this.lineMesh.geometry.setDrawRange(0, segments);
-    }
-
-    // Update 3rd person avatar position to follow camera
-    if (this.cameraMode === '3RD' && this.playerAvatarMesh) {
-      this.playerAvatarMesh.position.set(
-        this.camera.position.x,
-        this.camera.position.y - 1.6,
-        this.camera.position.z
-      );
-      this.playerAvatarMesh.rotation.y = this.yaw + Math.PI;
     }
   }
 
