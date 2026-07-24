@@ -155,20 +155,35 @@ class GameController {
   handleE() {
     const pos = this.player.camera.position;
 
-    // SELLING IS ALLOWED AT UNCLE ABU YACOUB AT THE PIER!
+    // 1. Check distance to Abu Yacoub (Selling Modal)
     if (this.env.pierVendorMesh) {
-      const d = pos.distanceTo(this.env.pierVendorMesh.position);
-      if (d < 12) { this.sellFish('عمي بويعقوب'); return; }
+      const dVendor = pos.distanceTo(this.env.pierVendorMesh.position);
+      if (dVendor < 9.5) {
+        this.sellFish('عمي بويعقوب');
+        return;
+      }
     }
 
-    // COOLER FISH STORAGE
+    // 2. Check distance to Cooler (Storing Fish)
     if (this.env.coolerMesh && !this.isCarryingCooler) {
-      const d = pos.distanceTo(this.env.coolerMesh.position);
-      if (d < 10) { this.storeFishInCooler(); return; }
+      const dCooler = pos.distanceTo(this.env.coolerMesh.position);
+      if (dCooler < 8) {
+        this.storeFishInCooler();
+        return;
+      }
     }
 
-    // FALLBACK IF CARRIED OR NEARBY
-    this.openVendorSellModal();
+    // 3. Fallback: If player has fish in hand, store it!
+    let hasFishInHand = false;
+    for (let i = 0; i < 4; i++) {
+      if (this.player.heldFishData[i]) { hasFishInHand = true; break; }
+    }
+
+    if (hasFishInHand) {
+      this.storeFishInCooler();
+    } else {
+      this.toast('⚠️ اقترب من العم بويعقوب للبيع، أو اقترب من الثلاجة لتخزين الأسماك!');
+    }
   }
 
   // COOLER RELOCATION VIA [Y] KEY / TOUCH BUTTON
@@ -177,7 +192,6 @@ class GameController {
     const pos = this.player.camera.position;
 
     if (!this.isCarryingCooler) {
-      // Pick up cooler if nearby
       const d = pos.distanceTo(this.env.coolerMesh.position);
       if (d < 10) {
         this.isCarryingCooler = true;
@@ -188,7 +202,6 @@ class GameController {
         this.toast('⚠️ اقترب من الثلاجة أولاً لنقلها!');
       }
     } else {
-      // Place down cooler (CONSTRAINT: ONLY INSIDE FISHING PIER AREA z: -10 to 70, x: -15 to 15)
       if (pos.z >= -10 && pos.z <= 70 && pos.x >= -15 && pos.x <= 15) {
         this.isCarryingCooler = false;
         this.env.coolerMesh.position.set(pos.x, 3.4, pos.z + 1.2);
@@ -202,28 +215,44 @@ class GameController {
   }
 
   storeFishInCooler() {
+    let fish = null;
+    let slotIdx = -1;
+
+    // 1. Check active slot first
     const s = this.player.activeSlot;
-    if (s < 2) {
-      this.toast('⚠️ حدد السمكة في يدك من الشريط السفي لتخزينها!');
-      return;
+    if (s >= 2 && this.player.heldFishData[s - 2]) {
+      fish = this.player.heldFishData[s - 2];
+      slotIdx = s - 2;
+    } else {
+      // 2. Find first held fish in hand
+      for (let i = 0; i < 4; i++) {
+        if (this.player.heldFishData[i]) {
+          fish = this.player.heldFishData[i];
+          slotIdx = i;
+          break;
+        }
+      }
     }
-    const fish = this.player.heldFishData[s - 2];
+
     if (!fish) {
-      this.toast('⚠️ هذه الخانة فارغة!');
+      this.toast('⚠️ لا توجد أسماك في يدك لحفظها بالثلاجة!');
       return;
     }
+
     if (this.coolerStoredFish.length >= this.coolerCapacity) {
       this.toast('⚠️ الثلاجة ممتلئة! بع الأسماك لـ بويعقوب [E]');
       return;
     }
-    this.coolerStoredFish.push(fish);
-    this.player.heldFishData[s - 2] = null;
-    this.player.setActiveSlot(s);
 
-    const icon = document.getElementById(`slot-${s}-icon`);
-    const lbl = document.getElementById(`slot-${s}-label`);
+    this.coolerStoredFish.push(fish);
+    this.player.heldFishData[slotIdx] = null;
+
+    const hotbarSlotNum = slotIdx + 2;
+    const icon = document.getElementById(`slot-${hotbarSlotNum}-icon`);
+    const lbl = document.getElementById(`slot-${hotbarSlotNum}-label`);
     if (icon) icon.innerText = '✋';
     if (lbl) lbl.innerText = 'فارغ';
+
     this.updateHUD();
     if (sounds.playStoreSound) sounds.playStoreSound();
     this.toast(`✅ تم حفظ ${fish.nameAr} بالثلاجة (${this.coolerStoredFish.length}/${this.coolerCapacity})`);
