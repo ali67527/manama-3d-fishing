@@ -4,15 +4,24 @@ export class RealtimeMultiplayerManager {
     constructor(gameController) {
         this.game = gameController;
         this.playerName = 'صياد_المنامة';
-        this.currentServerName = 'منامة_عام';
+        this.currentServerName = 'سيرفر المنامة الرئيسي';
         this.peerId = 'peer_' + Math.random().toString(36).substr(2, 7);
-        
-        this.channel = new BroadcastChannel('manama_fishing_global');
-        this.remotePlayers = new Map(); // peerId -> player object
-        this.serversList = new Map();
 
-        this.initPeerJS();
-        this.setupBroadcastChannel();
+        this.remotePlayers = new Map(); // peerId -> player data
+        this.serversList = new Map(); // serverId -> server info
+        this.mqttClient = null;
+
+        // Default Main Server
+        this.serversList.set('server_main', {
+            serverId: 'server_main',
+            name: 'سيرفر المنامة الرئيسي 🌊',
+            hostName: 'التاجر بويعقوب',
+            playerCount: 1,
+            lastActive: Date.now()
+        });
+
+        this.setupMqttWebSocket();
+        this.setupLocalFallback();
         this.startHeartbeat();
     }
 
@@ -22,35 +31,52 @@ export class RealtimeMultiplayerManager {
         }
     }
 
-    initPeerJS() {
+    setupMqttWebSocket() {
         try {
-            if (window.Peer) {
-                this.peer = new window.Peer(this.peerId, { debug: 1 });
-
-                this.peer.on('open', (id) => {
-                    this.peerId = id;
+            if (window.mqtt) {
+                // Connect to global public secure WebSocket MQTT Broker
+                this.mqttClient = window.mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                    clientId: 'manama_player_' + this.peerId,
+                    clean: true,
+                    connectTimeout: 4000,
+                    reconnectPeriod: 1000
                 });
 
-                this.peer.on('connection', (conn) => {
-                    this.setupConnection(conn);
+                this.mqttClient.on('connect', () => {
+                    // Subscribe to global server announcements and current room topic
+                    this.mqttClient.subscribe('manama3d/servers/#');
+                    this.mqttClient.subscribe('manama3d/rooms/+');
+                    this.game.toast('🌐 تم الاتصال بسيرفر الأونلاين العالمي بنجاح!');
+                });
+
+                this.mqttClient.on('message', (topic, payload) => {
+                    try {
+                        const data = JSON.parse(payload.toString());
+                        this.handleIncomingData(data);
+                    } catch (e) {}
                 });
             }
         } catch (e) {
-            console.warn('PeerJS fallback to BroadcastChannel/LocalStorage');
+            console.warn('MQTT Connection Error, falling back to local BroadcastChannel');
         }
     }
 
-    setupConnection(conn) {
-        conn.on('data', (data) => {
-            this.handleIncomingMessage(data);
+    setupLocalFallback() {
+        this.channel = new BroadcastChannel('manama_fishing_room');
+        this.channel.onmessage = (e) => this.handleIncomingData(e.data);
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'manama_net_msg' && e.newValue) {
+                try { this.handleIncomingData(JSON.parse(e.newValue)); } catch (err) {}
+            }
         });
     }
 
     createServer(serverName) {
         if (!serverName || !serverName.trim()) return;
         const sName = serverName.trim();
-        const sId = 'room_' + sName.replace(/\s+/g, '_');
-        
+        const sId = 'server_' + Math.random().toString(36).substr(2, 7);
+
         const sData = {
             serverId: sId,
             name: sName,
@@ -61,7 +87,7 @@ export class RealtimeMultiplayerManager {
         this.serversList.set(sId, sData);
         this.currentServerName = sName;
 
-        this.broadcastMessage({
+        this.broadcastMessage('manama3d/servers/announce', {
             type: 'ANNOUNCE_SERVER',
             server: sData
         });
@@ -77,35 +103,24 @@ export class RealtimeMultiplayerManager {
         }
     }
 
-    broadcastMessage(msg) {
+    broadcastMessage(topic, msg) {
         msg.peerId = this.peerId;
         msg.timestamp = Date.now();
         msg.serverRoom = this.currentServerName;
 
+        const payloadStr = JSON.stringify(msg);
+
+        // Send via Global WebSockets MQTT
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.publish(topic, payloadStr);
+        }
+
+        // Local Tab Broadcast
         try { this.channel.postMessage(msg); } catch (e) {}
-
-        try {
-            localStorage.setItem('manama_net_msg', JSON.stringify(msg));
-        } catch (e) {}
+        try { localStorage.setItem('manama_net_msg', payloadStr); } catch (e) {}
     }
 
-    setupBroadcastChannel() {
-        this.channel.onmessage = (event) => this.handleIncomingMessage(event.data);
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'manama_net_msg' && e.newValue) {
-                try {
-                    this.handleIncomingMessage(JSON.parse(e.newValue));
-                } catch (err) {}
-            }
-        });
-
-        window.addEventListener('beforeunload', () => {
-            this.broadcastMessage({ type: 'LEAVE' });
-        });
-    }
-
-    handleIncomingMessage(data) {
+    handleIncomingData(data) {
         if (!data || data.peerId === this.peerId) return;
 
         if (data.type === 'ANNOUNCE_SERVER') {
@@ -124,13 +139,15 @@ export class RealtimeMultiplayerManager {
 
     startHeartbeat() {
         setInterval(() => {
-            this.broadcastMessage({
+            // Announce server to global room list
+            this.broadcastMessage('manama3d/servers/announce', {
                 type: 'ANNOUNCE_SERVER',
                 server: {
                     serverId: 'server_' + this.peerId,
                     name: this.currentServerName,
                     hostName: this.playerName,
-                    playerCount: this.remotePlayers.size + 1
+                    playerCount: this.remotePlayers.size + 1,
+                    lastActive: Date.now()
                 }
             });
 
@@ -138,7 +155,7 @@ export class RealtimeMultiplayerManager {
                 const pos = this.game.player.camera.position;
                 const rotY = this.game.player.yaw;
 
-                this.broadcastMessage({
+                this.broadcastMessage('manama3d/rooms/update', {
                     type: 'UPDATE',
                     name: this.playerName,
                     position: { x: pos.x, y: pos.y, z: pos.z },
@@ -148,9 +165,10 @@ export class RealtimeMultiplayerManager {
                 });
             }
 
+            // Cleanup inactive players after 5s
             const now = Date.now();
             this.remotePlayers.forEach((pData, peerId) => {
-                if (now - pData.lastSeen > 4000) {
+                if (now - pData.lastSeen > 4500) {
                     this.removeRemotePlayer(peerId);
                 }
             });
@@ -261,7 +279,7 @@ export class RealtimeMultiplayerManager {
                 lastSeen: Date.now()
             };
             this.remotePlayers.set(data.peerId, pData);
-            this.game.toast(`🌐 انضم الصياد [${data.name}] للسيرفر!`);
+            this.game.toast(`🌐 انضم الصياد [${data.name}] لسيرفرك الأونلاين!`);
         }
 
         pData.lastSeen = Date.now();
