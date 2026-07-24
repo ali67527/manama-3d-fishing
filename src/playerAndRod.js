@@ -507,53 +507,123 @@ export class PlayerAndRodManager {
     }
   }
 
-  buildPlayerAvatarMesh() {
+  buildPlayerAvatarMesh(thobeColorHex = 0xffffff, headwearType = 'ghutra', outfitStyle = 'thobe') {
     if (this.playerAvatarMesh) this.scene.remove(this.playerAvatarMesh);
 
     this.playerAvatarMesh = new THREE.Group();
 
-    // Body (thobe)
-    const thobeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
-    const thobe = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 1.6, 16), thobeMat);
-    thobe.position.y = 0.8;
-    thobe.name = 'thobe';
+    // Body Outfit (Sleek body without raised T-pose arms!)
+    const bodyMat = new THREE.MeshStandardMaterial({ color: thobeColorHex, roughness: 0.4 });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.28, 1.8, 16), bodyMat);
+    body.position.y = 0.9;
+    body.name = 'thobe';
+
+    // Bisht Golden Trim if Bisht selected
+    if (outfitStyle === 'bisht') {
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 });
+      const trimL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.7, 0.04), goldMat);
+      trimL.position.set(-0.15, 0.9, 0.28);
+      const trimR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.7, 0.04), goldMat);
+      trimR.position.set(0.15, 0.9, 0.28);
+      this.playerAvatarMesh.add(trimL, trimR);
+    }
 
     // Head
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), headMat);
-    head.position.y = 1.8;
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 0.6 });
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), headMat);
+    head.position.y = 2.0;
 
-    // Ghutra (headscarf)
-    const ghutraMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.5, 12), ghutraMat);
-    ghutra.position.set(0, 2.05, 0);
+    // Prominent 3D Face Features facing forward (+Z)
+    const faceGroup = new THREE.Group();
 
-    // Agal (headband)
-    const agalMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-    const agal = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.04, 8, 16), agalMat);
-    agal.rotation.x = Math.PI / 2;
-    agal.position.set(0, 2.0, 0);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
 
-    // Arms
-    const armMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
-    const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), armMat);
-    leftArm.position.set(0.5, 1.2, 0);
-    leftArm.rotation.z = -0.3;
-    const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), armMat);
-    rightArm.position.set(-0.5, 1.2, 0);
-    rightArm.rotation.z = 0.3;
+    // Left Eye & Pupil
+    const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), eyeMat);
+    eyeL.position.set(-0.09, 2.05, 0.25);
+    const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), pupilMat);
+    pupilL.position.set(-0.09, 2.05, 0.29);
 
-    this.playerAvatarMesh.add(thobe, head, ghutra, agal, leftArm, rightArm);
+    // Right Eye & Pupil
+    const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), eyeMat);
+    eyeR.position.set(0.09, 2.05, 0.25);
+    const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), pupilMat);
+    pupilR.position.set(0.09, 2.05, 0.29);
+
+    // Eyebrows
+    const browMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const browL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.015, 0.02), browMat);
+    browL.position.set(-0.09, 2.12, 0.27);
+    browL.rotation.z = 0.05;
+    const browR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.015, 0.02), browMat);
+    browR.position.set(0.09, 2.12, 0.27);
+    browR.rotation.z = -0.05;
+
+    // Nose
+    const noseMat = new THREE.MeshStandardMaterial({ color: 0xc8a27a });
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.09, 8), noseMat);
+    nose.rotation.x = -Math.PI / 6;
+    nose.position.set(0, 2.0, 0.28);
+
+    // Mouth
+    const mouthMat = new THREE.MeshBasicMaterial({ color: 0x7f1d1d });
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.03), mouthMat);
+    mouth.position.set(0, 1.91, 0.26);
+
+    // Bahraini Mustache / Beard
+    const stacheMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const stache = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.035), stacheMat);
+    stache.position.set(0, 1.95, 0.27);
+
+    faceGroup.add(eyeL, pupilL, eyeR, pupilR, browL, browR, nose, mouth, stache);
+
+    // Headwear Options
+    const headwearGroup = new THREE.Group();
+    headwearGroup.name = 'headwear-group';
+
+    if (headwearType === 'ghutra') {
+      const ghutraMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+      const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.45, 14), ghutraMat);
+      ghutra.position.set(0, 2.3, 0);
+
+      const agalMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+      const agal = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.045, 8, 16), agalMat);
+      agal.rotation.x = Math.PI / 2;
+      agal.position.set(0, 2.22, 0);
+
+      headwearGroup.add(ghutra, agal);
+    } else if (headwearType === 'hair-curly') {
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x221810, roughness: 0.9 });
+      for (let i = 0; i < 7; i++) {
+        const puff = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), hairMat);
+        const angle = (i / 7) * Math.PI * 2;
+        puff.position.set(Math.cos(angle) * 0.18, 2.15 + (i % 2) * 0.05, Math.sin(angle) * 0.18);
+        headwearGroup.add(puff);
+      }
+      const topPuff = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), hairMat);
+      topPuff.position.set(0, 2.25, 0);
+      headwearGroup.add(topPuff);
+    } else if (headwearType === 'cap') {
+      const capMat = new THREE.MeshStandardMaterial({ color: 0x1e272e, roughness: 0.5 });
+      const capDome = new THREE.Mesh(new THREE.SphereGeometry(0.29, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), capMat);
+      capDome.position.set(0, 2.05, 0);
+      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.02, 0.22), capMat);
+      visor.position.set(0, 2.08, 0.28);
+      headwearGroup.add(capDome, visor);
+    } else if (headwearType === 'hair-short') {
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.8 });
+      const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.29, 16, 12, 0, Math.PI * 2, 0, Math.PI / 1.8), hairMat);
+      hairCap.position.set(0, 2.05, 0);
+      headwearGroup.add(hairCap);
+    }
+
+    this.playerAvatarMesh.add(body, head, faceGroup, headwearGroup);
     this.playerAvatarMesh.visible = false;
     this.scene.add(this.playerAvatarMesh);
   }
 
-  updateAvatarStyle(thobeColorHex = 0xffffff, headwearType = 'ghutra') {
-    if (!this.playerAvatarMesh) this.buildPlayerAvatarMesh();
-    this.playerAvatarMesh.traverse(child => {
-      if (child.name === 'thobe' && child.isMesh) {
-        child.material.color.setHex(thobeColorHex);
-      }
-    });
+  updateAvatarStyle(thobeColorHex = 0xffffff, headwearType = 'ghutra', outfitStyle = 'thobe') {
+    this.buildPlayerAvatarMesh(thobeColorHex, headwearType, outfitStyle);
   }
 }
