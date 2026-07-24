@@ -1123,7 +1123,29 @@ html, body {
   }
 
   .hotbar-container {
-    display: none !important; /* Hide hotbar on mobile touchscreens as requested */
+    display: flex !important;
+    bottom: 100px;
+    padding: 4px 8px;
+    gap: 6px;
+    border-radius: 18px;
+    transform: translateX(-50%) scale(0.88);
+    z-index: 120;
+    pointer-events: auto !important;
+  }
+
+  .hotbar-slot {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    pointer-events: auto !important;
+  }
+
+  .hotbar-slot .slot-icon {
+    font-size: 1.3rem;
+  }
+
+  .hotbar-slot .slot-label {
+    font-size: 0.6rem;
   }
 
   .hud-header {

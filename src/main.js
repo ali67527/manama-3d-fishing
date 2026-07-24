@@ -463,6 +463,22 @@ class GameController {
       });
     }
 
+    // Hotbar Slot Click & Touch Selection for Mobile and PC
+    document.querySelectorAll('.hotbar-slot').forEach(slot => {
+      const handleSelectSlot = (e) => {
+        const slotNum = parseInt(slot.dataset.slot);
+        if (slotNum) {
+          this.setHotbar(slotNum);
+          if (sounds.playClick) sounds.playClick();
+        }
+      };
+      slot.addEventListener('click', handleSelectSlot);
+      slot.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        handleSelectSlot(e);
+      }, { passive: true });
+    });
+
     const btnMobileInteract = document.getElementById('mobile-btn-interact');
     if (btnMobileInteract) {
       btnMobileInteract.addEventListener('touchstart', (e) => {
