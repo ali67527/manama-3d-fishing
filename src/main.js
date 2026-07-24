@@ -703,21 +703,23 @@ class GameController {
     const totalEl = document.getElementById('vendor-total-price');
     if (!container) return;
 
-    this.selectedSellIndices = new Set();
+    this.selectedSellHeld = new Set();
+    this.selectedSellCooler = new Set();
 
     let html = '';
     let total = 0;
 
+    // 1. Fish held in Hand (Hotbar 2-5)
     for (let i = 0; i < 4; i++) {
       const f = this.player.heldFishData[i];
       if (f) {
-        this.selectedSellIndices.add(i);
+        this.selectedSellHeld.add(i);
         total += f.calculatedPrice;
         html += `
           <div class="shop-item-card" style="display:flex;justify-content:space-between;align-items:center">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-              <input type="checkbox" checked id="chk-fish-${i}" class="chk-sell-fish" data-idx="${i}" />
-              <span><b>🐟 ${f.nameAr}</b> (${f.weight} كجم)</span>
+              <input type="checkbox" checked class="chk-sell-held" data-idx="${i}" />
+              <span><b>✋ [في اليد] ${f.nameAr}</b> (${f.weight} كجم)</span>
             </label>
             <span style="color:#2ecc71;font-weight:800">${f.calculatedPrice} دينار</span>
           </div>
@@ -725,21 +727,50 @@ class GameController {
       }
     }
 
-    container.innerHTML = html || '<p style="color:#aaa;text-align:center">لا توجد أسماك في يدك حالياً!</p>';
+    // 2. Fish stored in Cooler
+    this.coolerStoredFish.forEach((f, cIdx) => {
+      this.selectedSellCooler.add(cIdx);
+      total += f.calculatedPrice;
+      html += `
+        <div class="shop-item-card" style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,210,255,0.08)">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" checked class="chk-sell-cooler" data-cidx="${cIdx}" />
+            <span><b>🧊 [في الثلاجة] ${f.nameAr}</b> (${f.weight} كجم)</span>
+          </label>
+          <span style="color:#2ecc71;font-weight:800">${f.calculatedPrice} دينار</span>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html || '<p style="color:#aaa;text-align:center">لا توجد أسماك في يدك أو بالثلاجة حالياً!</p>';
     if (totalEl) totalEl.innerText = total;
 
-    // Checkbox listeners
-    container.querySelectorAll('.chk-sell-fish').forEach(chk => {
+    const updateTotal = () => {
+      let newTotal = 0;
+      this.selectedSellHeld.forEach(fi => {
+        if (this.player.heldFishData[fi]) newTotal += this.player.heldFishData[fi].calculatedPrice;
+      });
+      this.selectedSellCooler.forEach(ci => {
+        if (this.coolerStoredFish[ci]) newTotal += this.coolerStoredFish[ci].calculatedPrice;
+      });
+      if (totalEl) totalEl.innerText = newTotal;
+    };
+
+    container.querySelectorAll('.chk-sell-held').forEach(chk => {
       chk.addEventListener('change', (e) => {
         const idx = parseInt(e.target.dataset.idx);
-        if (e.target.checked) this.selectedSellIndices.add(idx);
-        else this.selectedSellIndices.delete(idx);
+        if (e.target.checked) this.selectedSellHeld.add(idx);
+        else this.selectedSellHeld.delete(idx);
+        updateTotal();
+      });
+    });
 
-        let newTotal = 0;
-        this.selectedSellIndices.forEach(fi => {
-          if (this.player.heldFishData[fi]) newTotal += this.player.heldFishData[fi].calculatedPrice;
-        });
-        if (totalEl) totalEl.innerText = newTotal;
+    container.querySelectorAll('.chk-sell-cooler').forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const cidx = parseInt(e.target.dataset.cidx);
+        if (e.target.checked) this.selectedSellCooler.add(cidx);
+        else this.selectedSellCooler.delete(cidx);
+        updateTotal();
       });
     });
   }
@@ -748,7 +779,8 @@ class GameController {
     let earned = 0;
     let count = 0;
 
-    this.selectedSellIndices.forEach(idx => {
+    // Sell selected Held fish
+    this.selectedSellHeld.forEach(idx => {
       const f = this.player.heldFishData[idx];
       if (f) {
         earned += f.calculatedPrice;
@@ -761,6 +793,18 @@ class GameController {
         if (lbl) lbl.innerText = 'فارغ';
       }
     });
+
+    // Sell selected Cooler fish
+    const remainingCoolerFish = [];
+    this.coolerStoredFish.forEach((f, cIdx) => {
+      if (this.selectedSellCooler.has(cIdx)) {
+        earned += f.calculatedPrice;
+        count++;
+      } else {
+        remainingCoolerFish.push(f);
+      }
+    });
+    this.coolerStoredFish = remainingCoolerFish;
 
     document.getElementById('vendor-sell-modal').classList.add('hidden');
     if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
