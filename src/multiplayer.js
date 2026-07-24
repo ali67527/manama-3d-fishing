@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { create3DFishMesh, BAHRAINI_FISHES } from './fishData.js';
+import mqtt from 'mqtt';
 
 export class RealtimeMultiplayerManager {
     constructor(gameController) {
@@ -35,29 +36,44 @@ export class RealtimeMultiplayerManager {
     }
 
     setupMqttWebSocket() {
-        try {
-            if (window.mqtt) {
-                this.mqttClient = window.mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+        const mqttLib = mqtt || window.mqtt;
+        if (!mqttLib) return;
+
+        const brokerUrls = [
+            'wss://broker.emqx.io:8084/mqtt',
+            'wss://test.mosquitto.org:8081',
+            'wss://broker.hivemq.com:8884/mqtt'
+        ];
+
+        let connected = false;
+
+        brokerUrls.forEach(url => {
+            if (connected) return;
+            try {
+                const client = mqttLib.connect(url, {
                     clientId: 'manama_p_' + this.peerId,
                     clean: true,
                     connectTimeout: 4000
                 });
 
-                this.mqttClient.on('connect', () => {
-                    this.mqttClient.subscribe('manama3d/servers/#');
-                    this.mqttClient.subscribe('manama3d/rooms/+');
+                client.on('connect', () => {
+                    if (!connected) {
+                        connected = true;
+                        this.mqttClient = client;
+                        this.mqttClient.subscribe('manama3d/servers/#');
+                        this.mqttClient.subscribe('manama3d/rooms/+');
+                        if (this.game.toast) this.game.toast('🌐 تم الاتصال بالشبكة أونلاين بنجاح!');
+                    }
                 });
 
-                this.mqttClient.on('message', (topic, payload) => {
+                client.on('message', (topic, payload) => {
                     try {
                         const data = JSON.parse(payload.toString());
                         this.handleIncomingData(data);
                     } catch (e) {}
                 });
-            }
-        } catch (e) {
-            console.warn('MQTT Connection error');
-        }
+            } catch (e) {}
+        });
     }
 
     setupLocalFallback() {
