@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لعبة صيد السمك 3D - كورنيش المنامة أونلاين | Manama 3D Fishing</title>
+  <title>لعبة صيد السمك 3D - كورنيش المنامة | Manama 3D Fishing</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -13,6 +13,14 @@
   <script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
 </head>
 <body>
+  <!-- Intro Splash Screen: 3rna studio -->
+  <div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+      <div class="splash-logo">3rna studio</div>
+      <div class="splash-sub">يقدم لكم لعبة صيد المنامة 3D الاحترافية</div>
+    </div>
+  </div>
+
   <div id="game-container"></div>
 
   <div id="ui-layer">
@@ -24,7 +32,7 @@
         </div>
         <div class="environment-status">
           <span id="time-display">☀️ نهار المنامة</span>
-          <span id="multiplayer-status" class="online-badge">🌐 السيرفر أونلاين</span>
+          <span id="multiplayer-status" class="online-badge">🎮 لعب فردي (Offline)</span>
         </div>
       </div>
 
@@ -108,13 +116,13 @@
       </div>
     </div>
 
-    <!-- Start Screen with Name Input -->
+    <!-- Start Screen with Name Input (Lobby) -->
     <div id="start-overlay" class="fullscreen-overlay active">
       <div class="start-modal glass-card-lg">
         <div class="start-header">
           <span class="bahrain-badge">🇧🇭 مملكة البحرين - كورنيش المنامة 3D</span>
-          <h1>لعبة صيد الأسماك أونلاين العالمية 🌐</h1>
-          <p>أدخل اسمك واختر سيرفر أو أنشئ سيرفرك الخاص ليلعب أصدقاؤك معك من أي مكان في العالم!</p>
+          <h1>لعبة صيد الأسماك الاحترافية</h1>
+          <p>أدخل اسمك واختر نمط اللعب في خليج البحرين!</p>
         </div>
 
         <div style="margin: 20px 0;">
@@ -126,33 +134,51 @@
           <button id="btn-mode-offline" class="mode-card">
             <span class="mode-icon">🎮</span>
             <h3>لعب فردي (Offline)</h3>
-            <p>استمتع بالصيد واستكشاف البحر وتطوير عتادك بمفردك</p>
+            <p>استمتع بالصيد واستكشاف البحر وتطوير عتادك بمفردك وبدون اتصال</p>
           </button>
           <button id="btn-mode-online" class="mode-card highlight">
             <span class="mode-icon">🌐</span>
-            <h3>دخول السيرفرات العالمية (Global Internet Room)</h3>
-            <p>ادخل قائمة السيرفرات وشاهد سيرفرات أصدقائك وادخل معهم فوراً!</p>
+            <h3>سيرفرات أونلاين (Online Multiplayer)</h3>
+            <p>افتح قائمة السيرفرات واختر السيرفر أو أنشئ سيرفرك الخاص!</p>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Server Browser Modal (قائمة وتصفح السيرفرات العالمية) -->
+    <!-- Abu Yacoub Selective Selling Modal -->
+    <div id="vendor-sell-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg">
+        <div class="modal-header">
+          <h3>🐟 دكان العم بويعقوب لبيع الأسماك</h3>
+          <button class="btn-close-modal" id="btn-close-vendor-sell">✕</button>
+        </div>
+
+        <p style="color:#aaa;margin-bottom:12px">حدد الأسماك التي ترغب في بيعها لـ بويعقوب واحتفظ بالباقي:</p>
+        
+        <div id="vendor-fish-list" class="items-list" style="max-height:260px;overflow-y:auto"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">
+          <div>المجموع المحدد للبيع: <span id="vendor-total-price" style="color:#2ecc71;font-weight:900;font-size:1.3rem">0</span> دينار</div>
+          <button id="btn-confirm-vendor-sell" class="btn-primary">💰 تأكيد بيع الأسماك المحددة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Browser Modal -->
     <div id="server-browser-modal" class="fullscreen-overlay hidden">
       <div class="modal-card glass-card-lg">
         <div class="modal-header">
-          <h3>🌐 السيرفرات العالمية المتاحة عبر الإنترنت (Global Live Servers)</h3>
+          <h3>🌐 قائمة السيرفرات المتاحة أونلاين</h3>
           <button class="btn-close-modal" id="btn-close-servers">✕</button>
         </div>
 
-        <!-- Create Server Input -->
         <div style="background:rgba(0,210,255,0.12);padding:16px;border-radius:12px;margin-bottom:15px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
           <input type="text" id="new-server-name-input" class="input-name" placeholder="ادخل اسم السيرفر الجديد..." style="flex:1" />
           <button id="btn-create-server-confirm" class="btn-primary">➕ إنشاء سيرفر مخصص</button>
         </div>
 
-        <h4>السيرفرات المتاحة أونلاين الآن:</h4>
-        <div id="servers-list-container" class="items-list" style="margin-top:10px;max-height:280px;overflow-y:auto"></div>
+        <h4>السيرفرات المتاحة حالياً:</h4>
+        <div id="servers-list-container" class="items-list" style="margin-top:10px;max-height:250px;overflow-y:auto"></div>
       </div>
     </div>
 

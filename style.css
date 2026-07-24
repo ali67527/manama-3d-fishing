@@ -31,6 +31,50 @@ html, body {
   color: #ffffff;
 }
 
+/* 3rna studio Intro Splash Screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #020813;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.8s ease;
+}
+
+.splash-content {
+  text-align: center;
+  animation: splashPulse 2s ease-in-out infinite;
+}
+
+.splash-logo {
+  font-family: var(--font-en);
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #00d2ff, #0083b0, #f1c40f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+  text-shadow: 0 0 40px rgba(0, 210, 255, 0.5);
+}
+
+.splash-sub {
+  margin-top: 12px;
+  font-size: 1.2rem;
+  color: #a0aec0;
+  font-weight: 700;
+}
+
+@keyframes splashPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
 #game-container {
   width: 100vw;
   height: 100vh;

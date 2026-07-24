@@ -225,34 +225,22 @@ class GameController {
   }
 
   sellFish(vendor) {
-    let earned = 0, count = 0;
-    this.coolerStoredFish.forEach(f => { earned += f.calculatedPrice; count++; });
-    this.coolerStoredFish = [];
-
-    for (let i = 0; i < 4; i++) {
-      const f = this.player.heldFishData[i];
-      if (f) {
-        earned += f.calculatedPrice; count++;
-        this.player.heldFishData[i] = null;
-        const sn = i + 2;
-        const icon = document.getElementById(`slot-${sn}-icon`);
-        const lbl = document.getElementById(`slot-${sn}-label`);
-        if (icon) icon.innerText = '✋';
-        if (lbl) lbl.innerText = 'فارغ';
-      }
-    }
-
-    if (count === 0) { this.toast('⚠️ لا توجد أسماك للبيع!'); return; }
-
-    this.coins += earned;
-    this.catchesCount += count;
-    this.updateHUD();
-    if (sounds.playSellSound) sounds.playSellSound();
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-    this.toast(`🎉 بعت ${count} أسماك لـ ${vendor} وربحت ${earned} دينار!`);
+    this.openVendorSellModal();
   }
 
   setupUI() {
+    // 3rna studio splash screen fade
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.classList.add('hidden'), 600);
+      }
+    }, 2200);
+
+    this.loadSaveData();
+    this.updateHUD();
+
     const getEnteredName = () => {
       const inp = document.getElementById('player-name-input');
       return (inp && inp.value.trim()) ? inp.value.trim() : 'صياد_المنامة';
@@ -262,6 +250,7 @@ class GameController {
       if (sounds.init) sounds.init();
       const name = getEnteredName();
       this.multiplayer.setPlayerName(name);
+      this.multiplayer.setOnlineMode(false); // Fully isolate offline mode!
       document.getElementById('start-overlay').classList.add('hidden');
       document.getElementById('multiplayer-status').innerText = `🎮 لعب فردي (${name})`;
       this.player.requestLock(this.container);
@@ -307,6 +296,21 @@ class GameController {
       this.player.requestLock(this.container);
       this.gameState = 'ROAMING';
     });
+
+    const btnCloseVendorSell = document.getElementById('btn-close-vendor-sell');
+    if (btnCloseVendorSell) {
+      btnCloseVendorSell.addEventListener('click', () => {
+        document.getElementById('vendor-sell-modal').classList.add('hidden');
+        if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+      });
+    }
+
+    const btnConfirmVendorSell = document.getElementById('btn-confirm-vendor-sell');
+    if (btnConfirmVendorSell) {
+      btnConfirmVendorSell.addEventListener('click', () => {
+        this.confirmVendorSell();
+      });
+    }
 
     document.getElementById('btn-sound').addEventListener('click', () => {
       const m = sounds.toggleMute ? sounds.toggleMute() : false;
@@ -580,20 +584,133 @@ class GameController {
     document.getElementById('catch-modal').classList.remove('hidden');
   }
 
+  saveData() {
+    try {
+      const data = {
+        coins: this.coins,
+        catchesCount: this.catchesCount,
+        purchasedItems: this.purchasedItems,
+        equippedRodId: this.equippedRodId,
+        coolerCapacity: this.coolerCapacity
+      };
+      localStorage.setItem('manama_fishing_save', JSON.stringify(data));
+    } catch (e) {}
+  }
+
+  loadSaveData() {
+    try {
+      const str = localStorage.getItem('manama_fishing_save');
+      if (str) {
+        const data = JSON.parse(str);
+        if (data.coins !== undefined) this.coins = data.coins;
+        if (data.catchesCount !== undefined) this.catchesCount = data.catchesCount;
+        if (data.purchasedItems) this.purchasedItems = data.purchasedItems;
+        if (data.equippedRodId) this.equippedRodId = data.equippedRodId;
+        if (data.coolerCapacity) this.coolerCapacity = data.coolerCapacity;
+      }
+    } catch (e) {}
+  }
+
   updateHUD() {
     document.getElementById('coins-count').innerText = this.coins;
     document.getElementById('cooler-count').innerText = `${this.coolerStoredFish.length}/${this.coolerCapacity}`;
     document.getElementById('catches-count').innerText = this.catchesCount;
+    this.saveData();
+  }
+
+  openVendorSellModal() {
+    this.player.unlockPointer();
+    this.renderVendorSellModal();
+    document.getElementById('vendor-sell-modal').classList.remove('hidden');
+  }
+
+  renderVendorSellModal() {
+    const container = document.getElementById('vendor-fish-list');
+    const totalEl = document.getElementById('vendor-total-price');
+    if (!container) return;
+
+    this.selectedSellIndices = new Set();
+
+    let html = '';
+    let total = 0;
+
+    for (let i = 0; i < 4; i++) {
+      const f = this.player.heldFishData[i];
+      if (f) {
+        this.selectedSellIndices.add(i);
+        total += f.calculatedPrice;
+        html += `
+          <div class="shop-item-card" style="display:flex;justify-content:space-between;align-items:center">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <input type="checkbox" checked id="chk-fish-${i}" class="chk-sell-fish" data-idx="${i}" />
+              <span><b>🐟 ${f.nameAr}</b> (${f.weight} كجم)</span>
+            </label>
+            <span style="color:#2ecc71;font-weight:800">${f.calculatedPrice} دينار</span>
+          </div>
+        `;
+      }
+    }
+
+    container.innerHTML = html || '<p style="color:#aaa;text-align:center">لا توجد أسماك في يدك حالياً!</p>';
+    if (totalEl) totalEl.innerText = total;
+
+    // Checkbox listeners
+    container.querySelectorAll('.chk-sell-fish').forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        if (e.target.checked) this.selectedSellIndices.add(idx);
+        else this.selectedSellIndices.delete(idx);
+
+        let newTotal = 0;
+        this.selectedSellIndices.forEach(fi => {
+          if (this.player.heldFishData[fi]) newTotal += this.player.heldFishData[fi].calculatedPrice;
+        });
+        if (totalEl) totalEl.innerText = newTotal;
+      });
+    });
+  }
+
+  confirmVendorSell() {
+    let earned = 0;
+    let count = 0;
+
+    this.selectedSellIndices.forEach(idx => {
+      const f = this.player.heldFishData[idx];
+      if (f) {
+        earned += f.calculatedPrice;
+        count++;
+        this.player.heldFishData[idx] = null;
+        const sn = idx + 2;
+        const icon = document.getElementById(`slot-${sn}-icon`);
+        const lbl = document.getElementById(`slot-${sn}-label`);
+        if (icon) icon.innerText = '✋';
+        if (lbl) lbl.innerText = 'فارغ';
+      }
+    });
+
+    document.getElementById('vendor-sell-modal').classList.add('hidden');
+    if (this.gameState === 'ROAMING') this.player.requestLock(this.container);
+
+    if (count > 0) {
+      this.coins += earned;
+      this.catchesCount += count;
+      this.updateHUD();
+      if (sounds.playSellSound) sounds.playSellSound();
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      this.toast(`🎉 بعت ${count} أسماك لـ العم بويعقوب وربحت ${earned} دينار!`);
+    } else {
+      this.toast('⚠️ لم تحدد أي سمكة لبيعها!');
+    }
   }
 
   renderShop() {
     const skins = [
       { id: 'rod-classic', name: 'سنارة كلاسيكية 🎣', desc: 'السنارة القياسية المتينة', cost: 0, style: 'basic' },
-      { id: 'rod-gold', name: 'سنارة ذهبية 👑', desc: 'تزيد أرباح البيع +25%', cost: 220, style: 'gold' },
-      { id: 'rod-neon', name: 'سنارة نيون ⚡', desc: 'تزيد سرعة السحب +35%', cost: 350, style: 'neon' },
-      { id: 'rod-crimson', name: 'سنارة ياقوتية 🔴', desc: 'تزيد فرصة صيد الأسطوري +40%', cost: 480, style: 'dragon' },
-      { id: 'rod-emerald', name: 'سنارة زمردية 🟢', desc: 'تقلل شد الخيط ومقاومة السمكة', cost: 600, style: 'emerald' },
-      { id: 'rod-violet', name: 'سنارة سايبر بايو المائية 🟣', desc: 'عتاد الصيد الأسطوري الكامل', cost: 850, style: 'violet' }
+      { id: 'rod-gold', name: 'سنارة ذهبية 👑', desc: 'تزيد أرباح البيع +25%', cost: 25, style: 'gold' },
+      { id: 'rod-neon', name: 'سنارة نيون ⚡', desc: 'تزيد سرعة السحب +35%', cost: 40, style: 'neon' },
+      { id: 'rod-crimson', name: 'سنارة ياقوتية 🔴', desc: 'تزيد فرصة صيد الأسطوري +40%', cost: 65, style: 'dragon' },
+      { id: 'rod-emerald', name: 'سنارة زمردية 🟢', desc: 'تقلل شد الخيط ومقاومة السمكة', cost: 90, style: 'emerald' },
+      { id: 'rod-violet', name: 'سنارة سايبر بايو المائية 🟣', desc: 'عتاد الصيد الأسطوري الكامل', cost: 140, style: 'violet' }
     ];
 
     document.getElementById('rods-shop-list').innerHTML = skins.map(s => {
