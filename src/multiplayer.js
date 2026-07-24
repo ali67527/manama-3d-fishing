@@ -154,8 +154,6 @@ export class RealtimeMultiplayerManager {
                 this.updateRemotePlayer(data);
             } else if (data.type === 'LEAVE') {
                 this.removeRemotePlayer(data.peerId);
-            } else if (data.type === 'TRADE_REQUEST' && data.targetPeerId === this.peerId) {
-                this.game.receiveTradeRequest(data);
             } else if (data.type === 'CHALLENGE_REQUEST' && data.targetPeerId === this.peerId) {
                 this.game.receiveChallengeRequest(data);
             }
@@ -165,16 +163,24 @@ export class RealtimeMultiplayerManager {
     startHeartbeat() {
         setInterval(() => {
             if (this.isOnline && this.game.player) {
-                const pos = this.game.player.camera.position;
+                const pos = this.game.player.position || this.game.player.camera.position;
                 const rotY = this.game.player.yaw;
 
-                // Send position & name
+                const thobeEl = document.getElementById('custom-thobe-color');
+                const headwearEl = document.getElementById('custom-headwear');
+                const outfit = {
+                    thobeColor: thobeEl ? parseInt(thobeEl.value, 16) : 0xffffff,
+                    headwear: headwearEl ? headwearEl.value : 'ghutra'
+                };
+
+                // Send position, outfit, & name
                 this.broadcastMessage('manama3d/rooms/update', {
                     type: 'UPDATE',
                     name: this.playerName,
                     position: { x: pos.x, y: pos.y, z: pos.z },
                     rotationY: rotY,
                     rodStyle: this.game.equippedRodId || 'rod-classic',
+                    outfit: outfit,
                     heldFishId: this.game.player.activeSlot > 1 ? this.game.player.heldFishData[this.game.player.activeSlot - 2]?.id : null
                 });
             }
@@ -185,22 +191,43 @@ export class RealtimeMultiplayerManager {
                     this.removeRemotePlayer(peerId);
                 }
             });
-        }, 50);
+        }, 120);
     }
 
-    createDetailedHumanAvatar(name) {
+    createDetailedHumanAvatar(name, outfit) {
         const pGroup = new THREE.Group();
 
-        // Realistic proportions matching 1.8m human height
-        const thobeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+        const thobeHex = (outfit && outfit.thobeColor) ? outfit.thobeColor : 0xffffff;
+        const thobeMat = new THREE.MeshStandardMaterial({ color: thobeHex, roughness: 0.4 });
         const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.28, 1.8, 14), thobeMat);
         body.position.y = 0.9;
+        body.name = 'thobe';
 
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), new THREE.MeshStandardMaterial({ color: 0xd2b48c }));
         head.position.y = 2.0;
 
-        const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.45, 12), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-        ghutra.position.set(0, 2.3, 0);
+        // Headwear
+        const headwearType = (outfit && outfit.headwear) ? outfit.headwear : 'ghutra';
+        const headwearGroup = new THREE.Group();
+
+        if (headwearType === 'ghutra') {
+            const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.45, 12), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+            ghutra.position.set(0, 2.3, 0);
+            const agal = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.04, 8, 16), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+            agal.rotation.x = Math.PI / 2;
+            agal.position.set(0, 2.22, 0);
+            headwearGroup.add(ghutra, agal);
+        } else if (headwearType === 'cap') {
+            const capDome = new THREE.Mesh(new THREE.SphereGeometry(0.29, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x1e272e }));
+            capDome.position.set(0, 2.05, 0);
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.2), new THREE.MeshStandardMaterial({ color: 0x1e272e }));
+            visor.position.set(0, 2.08, 0.26);
+            headwearGroup.add(capDome, visor);
+        } else {
+            const hair = new THREE.Mesh(new THREE.SphereGeometry(0.29, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x2c3e50 }));
+            hair.position.set(0, 2.05, 0);
+            headwearGroup.add(hair);
+        }
 
         // Face
         const face = new THREE.Group();
@@ -223,12 +250,15 @@ export class RealtimeMultiplayerManager {
         const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.02, 0.03), new THREE.MeshBasicMaterial({ color: 0x800000 }));
         mouth.position.set(0, 1.92, 0.26);
 
-        face.add(eyeL, pupilL, eyeR, pupilR, nose, mouth);
+        const stache = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.025, 0.03), new THREE.MeshBasicMaterial({ color: 0x222222 }));
+        stache.position.set(0, 1.95, 0.27);
+
+        face.add(eyeL, pupilL, eyeR, pupilR, nose, mouth, stache);
 
         const tagMesh = this.createNameTagMesh(name);
         tagMesh.position.set(0, 2.65, 0);
 
-        pGroup.add(body, head, ghutra, face, tagMesh);
+        pGroup.add(body, head, headwearGroup, face, tagMesh);
         return pGroup;
     }
 
@@ -280,7 +310,7 @@ export class RealtimeMultiplayerManager {
         let pData = this.remotePlayers.get(data.peerId);
 
         if (!pData) {
-            const avatarMesh = this.createDetailedHumanAvatar(data.name);
+            const avatarMesh = this.createDetailedHumanAvatar(data.name, data.outfit);
             const rodMesh = this.createCustom3DRodModel(data.rodStyle);
             avatarMesh.add(rodMesh);
 

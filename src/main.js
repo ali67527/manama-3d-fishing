@@ -295,7 +295,7 @@ class GameController {
     const hotbarSlotNum = slotIdx + 2;
     const icon = document.getElementById(`slot-${hotbarSlotNum}-icon`);
     const lbl = document.getElementById(`slot-${hotbarSlotNum}-label`);
-    if (icon) icon.innerText = '✋';
+    if (icon) icon.innerText = '📦';
     if (lbl) lbl.innerText = 'فارغ';
 
     this.updateHUD();
@@ -987,7 +987,7 @@ class GameController {
               if (icon) icon.innerText = '🐟';
               if (lbl) lbl.innerText = f.nameAr;
             } else {
-              if (icon) icon.innerText = '✋';
+              if (icon) icon.innerText = '📦';
               if (lbl) lbl.innerText = 'فارغ';
             }
           }
