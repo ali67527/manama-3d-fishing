@@ -317,6 +317,7 @@ class GameController {
 
     document.getElementById('btn-servers').addEventListener('click', () => {
       this.player.unlockPointer();
+      if (this.multiplayer) this.multiplayer.requestServerRefresh();
       this.renderServerBrowser();
       document.getElementById('server-browser-modal').classList.remove('hidden');
     });

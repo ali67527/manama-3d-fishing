@@ -12,10 +12,27 @@ export class RealtimeMultiplayerManager {
 
         this.remotePlayers = new Map(); // peerId -> player object
         this.serversList = new Map();
+        this.initDefaultServers();
 
         this.setupMqttWebSocket();
         this.setupLocalFallback();
         this.startHeartbeat();
+    }
+
+    initDefaultServers() {
+        const defaultServers = [
+            { serverId: 'official_main', name: '🌊 سيرفر المنامة العام (الرسمي)', hostName: 'السيرفر الرئيسي 🇧🇭', playerCount: 1, lastActive: Date.now() },
+            { serverId: 'official_bay', name: '🐟 سيرفر خليج البحرين للصيد', hostName: 'سيرفر المنامة 🇧🇭', playerCount: 1, lastActive: Date.now() },
+            { serverId: 'official_pvp', name: '⚔️ سيرفر التحديات ومبادلة الأسماك', hostName: 'سيرفر المنامة 🇧🇭', playerCount: 1, lastActive: Date.now() }
+        ];
+        defaultServers.forEach(s => this.serversList.set(s.serverId, s));
+    }
+
+    requestServerRefresh() {
+        this.broadcastMessage('manama3d/servers/announce', {
+            type: 'REQUEST_SERVERS_QUERY',
+            senderId: this.peerId
+        });
     }
 
     setPlayerName(name) {
