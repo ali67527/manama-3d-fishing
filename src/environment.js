@@ -421,8 +421,8 @@ export class EnvironmentManager {
         this.scene.add(seaWall);
 
         const pierMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.7 });
-        const pier = new THREE.Mesh(new THREE.BoxGeometry(22, 3, 54), pierMat);
-        pier.position.set(0, 1.8, 22);
+        const pier = new THREE.Mesh(new THREE.BoxGeometry(22, 3, 72), pierMat);
+        pier.position.set(0, 1.8, 32);
         this.scene.add(pier);
 
         // Wooden Staircase for Pier Exit (5 steps connecting pier to promenade)
@@ -467,7 +467,7 @@ export class EnvironmentManager {
         this.scene.add(bucketGroup);
 
         const pilingMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.9 });
-        for (let z = 5; z <= 60; z += 10) {
+        for (let z = 5; z <= 65; z += 10) {
             for (let x of [-10, 0, 10]) {
                 const pile = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 10), pilingMat);
                 pile.position.set(x, -2, z);
@@ -476,7 +476,7 @@ export class EnvironmentManager {
         }
 
         const railMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.5 });
-        for (let z = 2; z <= 62; z += 8) {
+        for (let z = 2; z <= 66; z += 8) {
             const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.7), railMat);
             p1.position.set(-10.5, 3.65, z);
             const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.7), railMat);
@@ -484,10 +484,10 @@ export class EnvironmentManager {
             this.scene.add(p1, p2);
         }
 
-        const beamL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 62), railMat);
-        beamL.position.set(-10.5, 4.0, 32);
-        const beamR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 62), railMat);
-        beamR.position.set(10.5, 4.0, 32);
+        const beamL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 66), railMat);
+        beamL.position.set(-10.5, 4.0, 35);
+        const beamR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 66), railMat);
+        beamR.position.set(10.5, 4.0, 35);
         this.scene.add(beamL, beamR);
 
         for (let x = -160; x <= 160; x += 45) {

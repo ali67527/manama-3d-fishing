@@ -320,6 +320,9 @@ class GameController {
     this.loadSaveData();
     this.updateHUD();
 
+    // Lobby 3D Avatar Preview
+    this.initLobbyAvatarPreview();
+
     window.addEventListener('beforeunload', () => this.saveData());
     window.addEventListener('pagehide', () => this.saveData());
     setInterval(() => this.saveData(), 3000);
@@ -794,6 +797,105 @@ class GameController {
     try {
       localStorage.setItem('manama_settings', JSON.stringify({ btnScalePct: pct.toString(), quality }));
     } catch (e) {}
+  }
+
+  initLobbyAvatarPreview() {
+    const container = document.getElementById('avatar-3d-canvas');
+    if (!container) return;
+
+    const w = container.clientWidth || 280;
+    const h = container.clientHeight || 220;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a1929);
+
+    const camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 20);
+    camera.position.set(0, 1.2, 5);
+    camera.lookAt(0, 1.0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+    const dirLight = new THREE.DirectionalLight(0x00d2ff, 2.0);
+    dirLight.position.set(3, 5, 4);
+    scene.add(dirLight);
+    const backLight = new THREE.DirectionalLight(0xff6b6b, 0.8);
+    backLight.position.set(-3, 3, -2);
+    scene.add(backLight);
+
+    // Build avatar character
+    const avatarGroup = new THREE.Group();
+
+    const thobeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+    const thobe = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 1.6, 16), thobeMat);
+    thobe.position.y = 0.8;
+    thobe.name = 'lobby-thobe';
+
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), headMat);
+    head.position.y = 1.8;
+
+    const ghutraMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.5, 12), ghutraMat);
+    ghutra.position.set(0, 2.05, 0);
+    ghutra.name = 'lobby-ghutra';
+
+    const agalMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const agal = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.04, 8, 16), agalMat);
+    agal.rotation.x = Math.PI / 2;
+    agal.position.set(0, 2.0, 0);
+    agal.name = 'lobby-agal';
+
+    const armMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
+    const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), armMat);
+    leftArm.position.set(0.5, 1.2, 0);
+    leftArm.rotation.z = -0.3;
+    const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), armMat);
+    rightArm.position.set(-0.5, 1.2, 0);
+    rightArm.rotation.z = 0.3;
+
+    // Ground disc
+    const disc = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.8, 0.8, 0.05, 32),
+      new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x00d2ff, emissiveIntensity: 0.3, transparent: true, opacity: 0.6 })
+    );
+
+    avatarGroup.add(thobe, head, ghutra, agal, leftArm, rightArm, disc);
+    scene.add(avatarGroup);
+
+    // Spin animation
+    const animate = () => {
+      if (!document.getElementById('avatar-3d-canvas')) return;
+      requestAnimationFrame(animate);
+      avatarGroup.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Hook dropdown changes to update preview
+    const thobeSelect = document.getElementById('custom-thobe-color');
+    if (thobeSelect) {
+      thobeSelect.addEventListener('change', () => {
+        const hex = parseInt(thobeSelect.value, 16);
+        thobe.material.color.setHex(hex);
+      });
+    }
+
+    const headSelect = document.getElementById('custom-headwear');
+    if (headSelect) {
+      headSelect.addEventListener('change', () => {
+        const val = headSelect.value;
+        ghutra.visible = (val === 'ghutra');
+        agal.visible = (val === 'ghutra');
+        // cap/hair handled visually by toggling ghutra visibility
+      });
+    }
+
+    this._lobbyAvatarPreview = { renderer, scene, camera, avatarGroup, thobe, ghutra, agal };
   }
 
   triggerConfetti(opts) {

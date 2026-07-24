@@ -452,13 +452,34 @@ export class PlayerAndRodManager {
       attr.needsUpdate = true;
       this.lineMesh.geometry.setDrawRange(0, segments);
     }
+
+    // Update 3rd person avatar position to follow camera
+    if (this.cameraMode === '3RD' && this.playerAvatarMesh) {
+      this.playerAvatarMesh.position.set(
+        this.camera.position.x,
+        this.camera.position.y - 1.6,
+        this.camera.position.z
+      );
+      this.playerAvatarMesh.rotation.y = this.yaw + Math.PI;
+    }
   }
 
   toggleCameraMode() {
+    if (!this.cameraMode) this.cameraMode = '1ST';
     this.cameraMode = (this.cameraMode === '3RD') ? '1ST' : '3RD';
+
     if (!this.playerAvatarMesh) this.buildPlayerAvatarMesh();
-    if (this.playerAvatarMesh) {
-      this.playerAvatarMesh.visible = (this.cameraMode === '3RD');
+
+    if (this.cameraMode === '3RD') {
+      // Move camera back for 3rd person view
+      this.playerAvatarMesh.visible = true;
+      if (this.rodGroup) this.rodGroup.visible = false;
+      this._savedCamOffset = true;
+    } else {
+      // Restore 1st person
+      this.playerAvatarMesh.visible = false;
+      if (this.rodGroup) this.rodGroup.visible = (this.activeSlot === 1);
+      this._savedCamOffset = false;
     }
   }
 
@@ -467,31 +488,46 @@ export class PlayerAndRodManager {
 
     this.playerAvatarMesh = new THREE.Group();
 
+    // Body (thobe)
     const thobeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
     const thobe = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 1.6, 16), thobeMat);
     thobe.position.y = 0.8;
+    thobe.name = 'thobe';
 
+    // Head
     const headMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), headMat);
     head.position.y = 1.8;
 
+    // Ghutra (headscarf)
     const ghutraMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
     const ghutra = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.5, 12), ghutraMat);
     ghutra.position.set(0, 2.05, 0);
 
+    // Agal (headband)
     const agalMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const agal = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.04, 8, 16), agalMat);
     agal.rotation.x = Math.PI / 2;
     agal.position.set(0, 2.0, 0);
 
-    this.playerAvatarMesh.add(thobe, head, ghutra, agal);
+    // Arms
+    const armMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
+    const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), armMat);
+    leftArm.position.set(0.5, 1.2, 0);
+    leftArm.rotation.z = -0.3;
+    const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.9, 8), armMat);
+    rightArm.position.set(-0.5, 1.2, 0);
+    rightArm.rotation.z = 0.3;
+
+    this.playerAvatarMesh.add(thobe, head, ghutra, agal, leftArm, rightArm);
+    this.playerAvatarMesh.visible = false;
     this.scene.add(this.playerAvatarMesh);
   }
 
   updateAvatarStyle(thobeColorHex = 0xffffff, headwearType = 'ghutra') {
     if (!this.playerAvatarMesh) this.buildPlayerAvatarMesh();
     this.playerAvatarMesh.traverse(child => {
-      if (child.isMesh && child.geometry.type === 'CylinderGeometry') {
+      if (child.name === 'thobe' && child.isMesh) {
         child.material.color.setHex(thobeColorHex);
       }
     });
