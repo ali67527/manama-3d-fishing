@@ -161,63 +161,92 @@
 
     <!-- Start Screen with Name Input & 3D Character Studio (Lobby) -->
     <div id="start-overlay" class="fullscreen-overlay active">
-      <div class="start-modal glass-card-lg" style="max-width:850px">
+      <div class="start-modal glass-card-lg" style="max-width:920px;width:92%">
         <div class="start-header">
           <span class="bahrain-badge">🇧🇭 مملكة البحرين - كورنيش المنامة 3D</span>
           <h1>لعبة صيد الأسماك الاحترافية</h1>
-          <p>تخصيص شخصية الصياد واختيار نمط اللعب!</p>
+          <p>القائمة الرئيسية: اختر نمط اللعب وخصص شخصيتك 3D!</p>
         </div>
 
-        <!-- 3D Character Customization Studio Grid -->
-        <div class="character-studio-grid">
-          <div class="studio-preview-box">
-            <div id="avatar-3d-canvas"></div>
-            <span class="studio-badge">📐 معاينة الشخصية 3D</span>
+        <!-- Split Layout: Left Menu Buttons, Right 3D Character Studio -->
+        <div class="lobby-split-container">
+          
+          <!-- LEFT SIDE: Main Menu Buttons Stacked -->
+          <div class="lobby-menu-list">
+            <button id="btn-mode-offline" class="lobby-menu-btn">
+              <span class="btn-icon-box">🎮</span>
+              <div>
+                <h3>لعب فردي (Offline Play)</h3>
+                <p>صيد الأسماك واستكشاف البحر بدون إنترنت</p>
+              </div>
+            </button>
+
+            <button id="btn-mode-online" class="lobby-menu-btn primary-online">
+              <span class="btn-icon-box">🌐</span>
+              <div>
+                <h3>لعب أونلاين (Global Server)</h3>
+                <p>ادخل السيرفر العالمي المباشر أو أنشئ سيرفرك الخاص</p>
+              </div>
+            </button>
+
+            <button id="btn-menu-settings" class="lobby-menu-btn">
+              <span class="btn-icon-box">⚙️</span>
+              <div>
+                <h3>إعدادات اللعبة (Settings)</h3>
+                <p>حجم الأزرار للجوال والجودة ومستوى الصوت</p>
+              </div>
+            </button>
+
+            <button id="btn-menu-info" class="lobby-menu-btn">
+              <span class="btn-icon-box">ℹ️</span>
+              <div>
+                <h3>معلومات اللعبة والدليل (Game Info)</h3>
+                <p>طريقة التحكم وإرشادات الصيد وقوانين التداول</p>
+              </div>
+            </button>
           </div>
 
-          <div class="studio-controls">
-            <div>
-              <label style="font-weight: 800; display: block; margin-bottom: 4px;">👤 اسمك في اللعبة (Player Name):</label>
-              <input type="text" id="player-name-input" class="input-name" placeholder="أدخل اسمك هنا..." value="صياد_المنامة" style="width:100%" />
+          <!-- RIGHT SIDE: 3D Character Studio Preview & Controls -->
+          <div class="character-studio-grid">
+            <div class="studio-preview-box">
+              <div id="avatar-3d-canvas"></div>
+              <span class="studio-badge">📐 معاينة الشخصية 3D</span>
             </div>
 
-            <div>
-              <label style="font-weight: 800; display: block; margin-bottom: 4px;">👔 طراز وملابس الشخصية:</label>
-              <select id="custom-thobe-color" class="input-select" style="width:100%">
-                <option value="0xffffff" selected>⚪ الثوب الأبيض التقليدي الملكي</option>
-                <option value="0x0f2b48">🔵 الثوب الكحلي البحريني الفاخر</option>
-                <option value="0x111111">⬛ الثوب الأسود الفخم</option>
-                <option value="0xd4af37">👑 بشت بحريني ملكي مقصب بالذهب</option>
-                <option value="0x3b5323">🌿 سترة صيد مموهة للمحترفين</option>
-                <option value="0xe74c3c">🔴 هودي سبورت عصري</option>
-                <option value="0x00d2ff">🌴 قميص استوائي بحري للصيد</option>
-              </select>
-            </div>
+            <div class="studio-controls">
+              <div>
+                <label style="font-weight: 800; display: block; margin-bottom: 4px; font-size:0.85rem">👤 اسمك في اللعبة (Player Name):</label>
+                <input type="text" id="player-name-input" class="input-name" placeholder="أدخل اسمك هنا..." value="صياد_المنامة" style="width:100%" />
+              </div>
 
-            <div>
-              <label style="font-weight: 800; display: block; margin-bottom: 4px;">💇‍♂️ تسريحة الشعر وغطاء الرأس (3D Real Hair):</label>
-              <select id="custom-headwear" class="input-select" style="width:100%">
-                <option value="ghutra" selected>🇧🇭 الغترة والعقال البحريني الاصيل</option>
-                <option value="hair-short">💇‍♂️ تسريحة شعر قصير أنيق 3D</option>
-                <option value="hair-curly">🌀 تسريحة شعر كيرلي مجعد حقيقي</option>
-                <option value="cap">🧢 كاب صيد بحري رياضي</option>
-                <option value="none">❌ حلاقة نظيفة (بدون شعر)</option>
-              </select>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="font-weight: 800; display: block; margin-bottom: 4px; font-size:0.85rem">👔 نوع وتصميم الملابس:</label>
+                  <select id="custom-thobe-color" class="input-select" style="width:100%">
+                    <option value="0xffffff" selected>⚪ ثوب أبيض ملكي</option>
+                    <option value="0x0f2b48">🔵 ثوب كحلي فاخر</option>
+                    <option value="0x111111">⬛ ثوب أسود فخم</option>
+                    <option value="0xd4af37">👑 بشت ملكي ذهبي</option>
+                    <option value="0x3b5323">🌿 سترة صيد مموهة</option>
+                    <option value="0xe74c3c">🔴 هودي سبورت</option>
+                    <option value="0x00d2ff">🌴 قميص استوائي</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="font-weight: 800; display: block; margin-bottom: 4px; font-size:0.85rem">💇‍♂️ الشعر وغطاء الرأس:</label>
+                  <select id="custom-headwear" class="input-select" style="width:100%">
+                    <option value="ghutra" selected>🇧🇭 غترة وعقال بحريني</option>
+                    <option value="hair-short">💇‍♂️ شعر قصير أنيق</option>
+                    <option value="hair-curly">🌀 شعر كيرلي مجعد</option>
+                    <option value="cap">🧢 كاب صيد أسود</option>
+                    <option value="none">❌ بدون غطاء رأس</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="mode-select-grid">
-          <button id="btn-mode-offline" class="mode-card">
-            <span class="mode-icon">🎮</span>
-            <h3>لعب فردي (Offline)</h3>
-            <p>استمتع بالصيد واستكشاف البحر وتطوير عتادك بمفردك</p>
-          </button>
-          <button id="btn-mode-online" class="mode-card highlight">
-            <span class="mode-icon">🌐</span>
-            <h3>سيرفرات أونلاين (Online Multiplayer)</h3>
-            <p>افتح قائمة السيرفرات واختر السيرفر أو أنشئ سيرفرك الخاص!</p>
-          </button>
         </div>
       </div>
     </div>
@@ -259,7 +288,46 @@
       </div>
     </div>
 
-    <!-- Catch Result Modal -->
+    <!-- Game Info & Guide Modal -->
+    <div id="game-info-modal" class="fullscreen-overlay hidden">
+      <div class="modal-card glass-card-lg" style="max-width:720px">
+        <div class="modal-header">
+          <h3>ℹ️ معلومات ودليل لعبة صيد المنامة 3D</h3>
+          <button class="btn-close-modal" id="btn-close-game-info">✕</button>
+        </div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px">
+          <div style="background:rgba(0,210,255,0.08);padding:14px;border-radius:12px;border:1px solid rgba(0,210,255,0.2)">
+            <h4 style="color:#00d2ff;margin-top:0">🎮 أزرار التحكم (PC & Mobile):</h4>
+            <ul style="font-size:0.85rem;line-height:1.6;margin:0;padding-right:18px;color:#cbd5e1">
+              <li><b>W, A, S, D / JoyStick</b>: الحركة باللاعب</li>
+              <li><b>Space</b>: القفز على الرصيف</li>
+              <li><b>Shift</b>: الركض السريع</li>
+              <li><b>Click / Touch</b>: رمي السنارة وسحب الخيط</li>
+              <li><b>V</b>: تغيير المنظور (3rd / 1st Person)</li>
+              <li><b>E</b>: البيع عند التاجر بويعقوب</li>
+              <li><b>G</b>: حمل / وضع الثلاجة</li>
+            </ul>
+          </div>
+
+          <div style="background:rgba(46,204,113,0.08);padding:14px;border-radius:12px;border:1px solid rgba(46,204,113,0.2)">
+            <h4 style="color:#2ecc71;margin-top:0">🐟 أسرار ونصائح الصيد:</h4>
+            <ul style="font-size:0.85rem;line-height:1.6;margin:0;padding-right:18px;color:#cbd5e1">
+              <li><b>توازن الشد (Tension)</b>: حافظ على مؤشر الشد في المنطقة الخضراء والصفراء حتى لا ينقطع الخيط!</li>
+              <li><b>تطوير السنارة</b>: اشتري سنارات أسرع وأقوى من المتجر لتصطاد أسماكاً أسطورية!</li>
+              <li><b>بيع الأسماك</b>: اذهب للعم بويعقوب على الرصيف لبيع أسماكك والحصول على الدنانير.</li>
+              <li><b>الأونلاين</b>: يمكنك تبادل الأسماك وتحدي أي صياد في السيرفر!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;text-align:center">
+          <button id="btn-start-from-info" class="btn-primary" style="width:100%;padding:12px;font-size:1.05rem">
+            🎣 ابدأ اللعب الآن
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="catch-modal" class="fullscreen-overlay hidden">
       <div class="catch-card glass-card-lg">
         <div class="catch-ribbon" id="catch-rarity-ribbon">أسطوري!</div>

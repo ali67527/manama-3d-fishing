@@ -2,6 +2,22 @@ import * as THREE from 'three';
 
 export const BAHRAINI_FISHES = [
   {
+    id: 'shereefi_gold',
+    nameAr: 'شريفي ذهبي أسطوري 👑',
+    nameEn: 'Mythical Golden Shereefi',
+    rarity: 'خرافي أسطوري',
+    rarityClass: 'legendary',
+    minWeight: 8.0,
+    maxWeight: 25.0,
+    basePrice: 1000.0,
+    color: 0xffd700,
+    accentColor: 0xff4500,
+    bodyType: 'grouper',
+    pullForce: 3.5,
+    resistInterval: 800,
+    description: 'أسطورة بحر البحرين! سمكة ذهبية براقة نادرة جداً تباع بـ 1000 دينار لدى التاجر بويعقوب!'
+  },
+  {
     id: 'safi',
     nameAr: 'صافي بحريني',
     nameEn: 'Safi (Rabbitfish)',

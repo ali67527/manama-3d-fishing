@@ -369,8 +369,38 @@ class GameController {
     const btnOnline = document.getElementById('btn-mode-online');
     if (btnOnline) btnOnline.addEventListener('click', startOnline);
 
-    const btnStart = document.getElementById('btn-start-game');
-    if (btnStart) btnStart.addEventListener('click', startOffline);
+    const btnMenuSettings = document.getElementById('btn-menu-settings');
+    const modalSettings = document.getElementById('settings-modal');
+    if (btnMenuSettings && modalSettings) {
+      btnMenuSettings.addEventListener('click', () => {
+        this.player.unlockPointer();
+        modalSettings.classList.remove('hidden');
+      });
+    }
+
+    const btnMenuInfo = document.getElementById('btn-menu-info');
+    const modalInfo = document.getElementById('game-info-modal');
+    if (btnMenuInfo && modalInfo) {
+      btnMenuInfo.addEventListener('click', () => {
+        this.player.unlockPointer();
+        modalInfo.classList.remove('hidden');
+      });
+    }
+
+    const btnCloseInfo = document.getElementById('btn-close-game-info');
+    if (btnCloseInfo && modalInfo) {
+      btnCloseInfo.addEventListener('click', () => {
+        modalInfo.classList.add('hidden');
+      });
+    }
+
+    const btnStartFromInfo = document.getElementById('btn-start-from-info');
+    if (btnStartFromInfo && modalInfo) {
+      btnStartFromInfo.addEventListener('click', () => {
+        modalInfo.classList.add('hidden');
+        startOffline();
+      });
+    }
 
     document.getElementById('btn-servers').addEventListener('click', () => {
       this.player.unlockPointer();
@@ -381,7 +411,6 @@ class GameController {
 
     // Settings Modal Listeners
     const btnSettings = document.getElementById('btn-settings');
-    const modalSettings = document.getElementById('settings-modal');
     const btnCloseSettings = document.getElementById('btn-close-settings');
     const btnSaveSettings = document.getElementById('btn-save-settings');
 
