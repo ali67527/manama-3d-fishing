@@ -46,7 +46,7 @@ class GameController {
     this.spawnUnderwaterFish();
 
     // Game state
-    this.gameState = 'START_MENU';
+    this.gameState = 'LOBBY';
     this.currentFish = null;
     this.fishDistance = 30;
 
@@ -1453,6 +1453,19 @@ class GameController {
     requestAnimationFrame(this.animate);
     const dt = this.clock.getDelta();
     const t = this.clock.getElapsedTime();
+
+    if (this.gameState === 'LOBBY') {
+      const angle = t * 0.06;
+      this.camera.position.set(24 * Math.sin(angle), 10, 32 + 18 * Math.cos(angle));
+      this.camera.lookAt(0, 3.5, 12);
+      this.env.update(dt, t);
+      this.swimmingFishGroup.children.forEach(f => {
+        f.position.x += Math.sin(t + f.position.z) * dt * f.userData.speed;
+        f.rotation.y += Math.cos(t * 0.5) * dt * f.userData.rotSpd;
+      });
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
 
     this.env.update(dt, t);
     this.player.update(dt, 100 - this.lineHealth);

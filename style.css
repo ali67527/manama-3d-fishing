@@ -890,13 +890,57 @@ html, body {
   color: #a0aec0 !important;
 }
 
-/* New Lobby Layout: Left Buttons Menu, Right 3D Character Studio */
-.lobby-split-container {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 24px;
-  margin-top: 16px;
-  align-items: stretch;
+/* Transparent Lobby Overlay with Live 3D Sea Background */
+#start-overlay {
+  background: rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(2px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.lobby-floating-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 94%;
+  max-width: 1100px;
+  gap: 30px;
+}
+
+.lobby-panel-card {
+  background: rgba(4, 14, 28, 0.82) !important;
+  border: 1.5px solid rgba(0, 210, 255, 0.4) !important;
+  border-radius: 22px !important;
+  padding: 22px !important;
+  backdrop-filter: blur(14px) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 210, 255, 0.1) !important;
+  color: #fff;
+}
+
+.lobby-panel-card.left-panel {
+  width: 440px;
+}
+
+.lobby-panel-card.right-panel {
+  width: 440px;
+}
+
+.panel-header {
+  margin-bottom: 16px;
+  text-align: right;
+}
+
+.panel-header h2 {
+  margin: 4px 0 0 0;
+  font-size: 1.4rem;
+  color: #00d2ff;
+}
+
+.panel-header p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #cbd5e1;
 }
 
 .lobby-menu-list {
@@ -923,7 +967,7 @@ html, body {
 }
 
 .lobby-menu-btn:hover {
-  background: rgba(0, 210, 255, 0.2);
+  background: rgba(0, 210, 255, 0.25);
   border-color: #00d2ff;
   transform: translateX(-6px) scale(1.02);
   box-shadow: 0 0 25px rgba(0, 210, 255, 0.4);
@@ -944,20 +988,27 @@ html, body {
 
 .lobby-menu-btn h3 {
   margin: 0 0 2px 0;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: #fff;
 }
 
 .lobby-menu-btn p {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #cbd5e1;
 }
 
-.character-studio-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+@media (max-width: 850px) {
+  .lobby-floating-container {
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    max-height: 92vh;
+  }
+  .lobby-panel-card.left-panel,
+  .lobby-panel-card.right-panel {
+    width: 100%;
+  }
 }
 
 .mode-card {

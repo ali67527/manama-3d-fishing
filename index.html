@@ -148,30 +148,17 @@
       </div>
     </div>
 
-    <!-- 1v1 Challenge Timer HUD -->
-    <div id="challenge-hud" class="challenge-hud hidden glass-card">
-      <div class="challenge-title">⚔️ تحدي صيد الأسماك 1v1</div>
-      <div class="challenge-timer" id="challenge-time-left">60 ثانية</div>
-      <div class="challenge-scores">
-        <div class="player-score">أنت: <span id="my-challenge-score">0</span> سمكة</div>
-        <div class="vs-badge">VS</div>
-        <div class="opponent-score"><span id="challenge-opp-name">الخصم</span>: <span id="opp-challenge-score">0</span> سمكة</div>
-      </div>
-    </div>
-
-    <!-- Start Screen with Name Input & 3D Character Studio (Lobby) -->
+    <!-- Start Screen Lobby Overlay: Transparent 3D Map View with Floating Left Buttons & Right Studio -->
     <div id="start-overlay" class="fullscreen-overlay active">
-      <div class="start-modal glass-card-lg" style="max-width:920px;width:92%">
-        <div class="start-header">
-          <span class="bahrain-badge">🇧🇭 مملكة البحرين - كورنيش المنامة 3D</span>
-          <h1>لعبة صيد الأسماك الاحترافية</h1>
-          <p>القائمة الرئيسية: اختر نمط اللعب وخصص شخصيتك 3D!</p>
-        </div>
+      <div class="lobby-floating-container">
+        
+        <!-- LEFT SIDE: Floating Menu Buttons Panel -->
+        <div class="lobby-panel-card left-panel">
+          <div class="panel-header">
+            <span class="bahrain-badge">🇧🇭 كورنيش المنامة 3D</span>
+            <h2>القائمة الرئيسية</h2>
+          </div>
 
-        <!-- Split Layout: Left Menu Buttons, Right 3D Character Studio -->
-        <div class="lobby-split-container">
-          
-          <!-- LEFT SIDE: Main Menu Buttons Stacked -->
           <div class="lobby-menu-list">
             <button id="btn-mode-offline" class="lobby-menu-btn">
               <span class="btn-icon-box">🎮</span>
@@ -205,8 +192,15 @@
               </div>
             </button>
           </div>
+        </div>
 
-          <!-- RIGHT SIDE: 3D Character Studio Preview & Controls -->
+        <!-- RIGHT SIDE: Floating 3D Character Studio Panel -->
+        <div class="lobby-panel-card right-panel">
+          <div class="panel-header">
+            <h2>تعديل شخصيتك 3D</h2>
+            <p>اختر اسمك والملابس والشعر</p>
+          </div>
+
           <div class="character-studio-grid">
             <div class="studio-preview-box">
               <div id="avatar-3d-canvas"></div>
@@ -246,7 +240,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
